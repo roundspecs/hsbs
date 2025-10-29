@@ -1,4 +1,4 @@
-import LogoutBtn from "@/components/LogoutBtn";
+import LogoutBtn from "@/components/auth/LogoutBtn";
 import NewWorkspaceDialog from "@/components/NewWorkspaceDialog";
 import WorkspaceCard from "@/components/WorkspaceCard";
 

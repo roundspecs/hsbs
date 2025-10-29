@@ -1,9 +1,8 @@
 'use client';
 
-import AuthPage from '@/app/auth/page';
-import { useAuth } from '@/lib/useAuth';
+import AuthPage from '@/components/auth/AuthPage';
 import { Spinner } from '@/components/ui/spinner';
-import { Button } from '@/components/ui/button';
+import { useAuth } from '@/lib/useAuth';
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();

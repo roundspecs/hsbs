@@ -2,7 +2,7 @@
 
 import { logout } from '@/lib/auth';
 import { LogOut } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 
 export default function LogoutBtn() {
   const handleLogout = async () => {
