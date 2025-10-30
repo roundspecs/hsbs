@@ -1,17 +1,14 @@
 "use client";
 
-import { logout } from "@/lib/auth";
-import { Activity, Bell, BookOpen, Bot, ChevronDown, CreditCard, Frame, LogOut, Map, PieChart, Plus, Settings, Settings2, SquareTerminal, User, Zap } from 'lucide-react';
+import { useAuth } from '@/lib/useAuth';
+import { Activity, BookOpen, Bot, Frame, Map, PieChart, Settings2, SquareTerminal, Zap } from 'lucide-react';
 import { useRouter } from "next/navigation";
 import React from "react";
-import { Avatar, AvatarFallback } from '../ui/avatar';
-import { Button } from '../ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from '../ui/sidebar';
-import { WorkspaceSwitcher } from "./workspace-switcher";
-import { NavUser } from "./nav-user";
 import { NavMain } from "./nav-main";
 import { NavProjects } from "./nav-projects";
+import { NavUser } from "./nav-user";
+import { WorkspaceSwitcher } from "./workspace-switcher";
 
 const data = {
   navMain: [
@@ -131,7 +128,6 @@ const AppSidebar = ({ current }: { current: string }) => {
     []
   );
 
-
   return (
     <Sidebar collapsible="icon" >
       <SidebarHeader>
@@ -144,7 +140,7 @@ const AppSidebar = ({ current }: { current: string }) => {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={{ name: "Zarif", email: "zarif@example.com", avatar: "https://i.pravatar.cc/150?img=3" }} />
+        <NavUser />
       </SidebarFooter>
 
       <SidebarRail />

@@ -5,9 +5,9 @@ import AppSidebar from '@/components/sidebar/app-sidebar';
 
 export const dynamic = 'force-dynamic'
 
-export default function WorkspaceLayout(props: any) {
-  const { children, params } = props
-  const slug = params?.slug ?? ''
+export default async function WorkspaceLayout(props: any) {
+  const { children, params } = await props
+  const slug = (await params)?.slug ?? ''
 
   return (
     <SidebarProvider>
