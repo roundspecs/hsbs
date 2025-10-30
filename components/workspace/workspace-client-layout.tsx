@@ -8,15 +8,13 @@ import { useAuth } from "@/lib/useAuth";
 import React, { useEffect, useState } from "react";
 import { db } from "@/lib/firebaseConfig";
 import { getDocs, collection, doc, getDoc } from "firebase/firestore";
-import { useRouter } from "next/navigation";
-import { assert } from "console";
-import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
+import WorkspaceNoAccess from "./workspace-no-access";
+import WorkspaceLoading from "./workspace-loading";
 
 type Workspace = { name: string; slug: string };
 
 const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, slug: string }) => {
-  const router = useRouter();
   const { user } = useAuth();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,23 +54,9 @@ const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, 
   }, [user]);
 
   if (loading) {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4 text-center text-muted-foreground">
-        <Spinner />
-        <p className="text-xl">Loading workspace...</p>
-      </div>
-    );
+    return <WorkspaceLoading />;
   } else if (!activeWorkspace) {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4 text-center text-muted-foreground">
-        <p>You don’t have access to this workspace.</p>
-        <Button
-          onClick={() => router.push("/")}
-        >
-          Go back home
-        </Button>
-      </div>
-    );
+    return <WorkspaceNoAccess />;
   }
 
 
