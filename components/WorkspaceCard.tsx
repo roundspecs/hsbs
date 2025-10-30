@@ -6,15 +6,15 @@ import { Card, CardContent, CardDescription, CardTitle } from "./ui/card";
 
 type Props = {
   name: string;
-  href: string;
+  slug: string;
 };
 
-export default function WorkspaceCard({ name, href }: Props) {
+export default function WorkspaceCard({ name, slug }: Props) {
   const initial = name.trim().charAt(0).toUpperCase() || "?";
 
   return (
     <li>
-      <Link href={href} className="block">
+      <Link href={`/w/${slug}`} className="block">
         <Card className="cursor-pointer hover:shadow-md transition">
           <CardContent className="flex items-center gap-4">
             <Avatar>
@@ -22,7 +22,7 @@ export default function WorkspaceCard({ name, href }: Props) {
             </Avatar>
             <div>
               <CardTitle>{name}</CardTitle>
-              <CardDescription>Workspace</CardDescription>
+              <CardDescription>Slug: {slug}</CardDescription>
             </div>
           </CardContent>
         </Card>

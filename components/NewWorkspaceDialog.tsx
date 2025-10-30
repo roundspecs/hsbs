@@ -98,7 +98,7 @@ export default function NewWorkspaceDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">Create workspace</Button>
+        <Button size="sm">Create</Button>
       </DialogTrigger>
 
       <DialogContent>
