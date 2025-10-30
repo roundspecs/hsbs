@@ -1,8 +1,7 @@
 "use client"
 
-import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ChevronsUpDown, Home } from "lucide-react"
+import { ChevronsUpDown, Home, Zap } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -10,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
@@ -19,26 +17,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 
-export function WorkspaceSwitcher({ workspaces, current }: {
-  workspaces: {
-    name: string
-    logo: React.ElementType
-    slug: string
-  }[], current: string
-}) {
+type Workspace = { name: string, slug: string }
+
+export function WorkspaceSwitcher({ workspaces, activeWorkspace }: { workspaces: Workspace[], activeWorkspace: Workspace }) {
   const { isMobile } = useSidebar()
-  const [activeWorkspace, setActiveWorkspace] = React.useState(workspaces[0])
-  // TODO: active workspace does not change with slug url change
   const router = useRouter()
 
   const handleSwitch = (slug: string) => {
     router.push(`/w/${slug}`);
   };
-
-  if (!activeWorkspace) {
-    return null
-  }
 
   return (
     <SidebarMenu>
@@ -49,9 +38,9 @@ export function WorkspaceSwitcher({ workspaces, current }: {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <activeWorkspace.logo className="size-4" />
-              </div>
+              <Avatar className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <AvatarFallback className="bg-sidebar-primary rounded-lg">{activeWorkspace.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{activeWorkspace.name}</span>
                 <span className="truncate text-xs">{activeWorkspace.slug}</span>
@@ -71,12 +60,12 @@ export function WorkspaceSwitcher({ workspaces, current }: {
             {workspaces.map((workspace, index) => (
               <DropdownMenuItem
                 key={workspace.name}
-                onClick={() => setActiveWorkspace(workspace)}
+                onClick={() => handleSwitch(workspace.slug)}
                 className="gap-2 p-2"
               >
-                <div className="flex size-6 items-center justify-center rounded-md border">
-                  <workspace.logo className="size-3.5 shrink-0" />
-                </div>
+                <Avatar className="flex size-6 items-center justify-center rounded-md border">
+                  <AvatarFallback className="rounded-lg">{workspace.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
                 {workspace.name}
               </DropdownMenuItem>
             ))}

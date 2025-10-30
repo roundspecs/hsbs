@@ -3,12 +3,14 @@
 import { useAuth } from '@/lib/useAuth';
 import { Activity, BookOpen, Bot, Frame, Map, PieChart, Settings2, SquareTerminal, Zap } from 'lucide-react';
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from '../ui/sidebar';
 import { NavMain } from "./nav-main";
 import { NavProjects } from "./nav-projects";
 import { NavUser } from "./nav-user";
 import { WorkspaceSwitcher } from "./workspace-switcher";
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebaseConfig';
 
 const data = {
   navMain: [
@@ -117,23 +119,14 @@ const data = {
   ],
 }
 
-const AppSidebar = ({ current }: { current: string }) => {
-  const router = useRouter();
+type Workspace = { name: string, slug: string }
 
-  const workspaces = React.useMemo(
-    () => [
-      { name: "Zimmer Biomet", slug: "zimmer-biomet", logo: Zap },
-      { name: "CONMED", slug: "conmed", logo: Activity },
-    ],
-    []
-  );
-
+const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], activeWorkspace: Workspace }) => {
   return (
     <Sidebar collapsible="icon" >
       <SidebarHeader>
-        <WorkspaceSwitcher workspaces={workspaces} current={current} />
+        <WorkspaceSwitcher workspaces={workspaces} activeWorkspace={activeWorkspace} />
       </SidebarHeader>
-
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />

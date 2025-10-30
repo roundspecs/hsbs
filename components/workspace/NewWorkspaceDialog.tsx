@@ -1,8 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { db } from "@/lib/firebaseConfig";
+import { useAuth } from "@/lib/useAuth";
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc
+} from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { Button } from "./ui/button";
+import { useMemo, useState } from "react";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,18 +19,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
-import { Input } from "./ui/input";
-import { useAuth } from "@/lib/useAuth";
-import { db } from "@/lib/firebaseConfig";
-import {
-  addDoc,
-  collection,
-  serverTimestamp,
-  doc,
-  setDoc,
-  getDoc,
-} from "firebase/firestore";
+} from "../ui/dialog";
+import { Input } from "../ui/input";
 
 export default function NewWorkspaceDialog() {
   const [open, setOpen] = useState(false);

@@ -1,7 +1,6 @@
 'use client';
 
 import LogoutBtn from '@/components/auth/LogoutBtn';
-import NewWorkspaceDialog from '@/components/NewWorkspaceDialog';
 import {
   Empty,
   EmptyContent,
@@ -9,16 +8,13 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from '@/components/ui/empty';
-import WorkspaceCard from '@/components/WorkspaceCard';
+import NewWorkspaceDialog from '@/components/workspace/NewWorkspaceDialog';
+import WorkspaceCard from '@/components/workspace/WorkspaceCard';
 import { db } from '@/lib/firebaseConfig';
 import { useAuth } from '@/lib/useAuth';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-/**
- * Dashboard/Home page
- * Shows only the workspaces where the user is a member.
- */
 export default function Home() {
   const { user } = useAuth();
   const [workspaces, setWorkspaces] = useState<{ name: string; slug: string }[]>([]);

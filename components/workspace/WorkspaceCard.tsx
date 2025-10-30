@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Avatar, AvatarFallback } from "./ui/avatar";
-import { Card, CardContent, CardDescription, CardTitle } from "./ui/card";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Card, CardContent, CardDescription, CardTitle } from "../ui/card";
 
 type Props = {
   name: string;
