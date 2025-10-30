@@ -13,7 +13,6 @@ export default function WorkspaceCard({ name, slug }: Props) {
   const initial = name.trim().charAt(0).toUpperCase() || "?";
 
   return (
-    <li>
       <Link href={`/w/${slug}`} className="block">
         <Card className="cursor-pointer hover:shadow-md transition">
           <CardContent className="flex items-center gap-4">
@@ -27,6 +26,5 @@ export default function WorkspaceCard({ name, slug }: Props) {
           </CardContent>
         </Card>
       </Link>
-    </li>
   );
 }
