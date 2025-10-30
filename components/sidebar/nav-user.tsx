@@ -35,8 +35,6 @@ export function NavUser() {
   const email = user?.email ?? '';
   const photoURL = user?.photoURL
 
-  console.log(photoURL);
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
