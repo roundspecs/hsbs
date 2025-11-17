@@ -53,7 +53,7 @@ export default function WorkspaceSettings({ slug }: { slug: string }) {
         );
       }
 
-      setSuccess("Workspace name updated");
+      setSuccess("Successfully updated workspace name");
       setTimeout(() => setSuccess(""), 2500);
     } catch (err) {
       console.error("Failed to save workspace name:", err);
