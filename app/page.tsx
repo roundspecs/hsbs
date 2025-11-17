@@ -52,6 +52,19 @@ export default function Home() {
     fetchWorkspaces();
   }, [user]);
 
+  // Listen for rename events from other parts of the app (sidebar dialog)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ev = e as CustomEvent<{ slug: string; name: string }>;
+      const { slug, name } = ev.detail || {};
+      if (!slug) return;
+      setWorkspaces((prev) => prev.map((ws) => (ws.slug === slug ? { ...ws, name } : ws)));
+    };
+
+    window.addEventListener('workspace:renamed', handler as EventListener);
+    return () => window.removeEventListener('workspace:renamed', handler as EventListener);
+  }, []);
+
   return (
     <main className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100">
       {/* Header */}

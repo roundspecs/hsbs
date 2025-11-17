@@ -7,6 +7,7 @@ import { db } from "@/lib/firebaseConfig";
 import { useAuth } from "@/lib/useAuth";
 import { Separator } from "@radix-ui/react-separator";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from "react";
 import WorkspaceLoading from "./workspace-loading";
 import WorkspaceNoAccess from "./workspace-no-access";
@@ -18,6 +19,13 @@ const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, 
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const activeWorkspace: Workspace | undefined = workspaces.find(workspace => workspace.slug === slug);
+
+  const pathname = usePathname();
+  const segments = pathname?.split('/').filter(Boolean) ?? [];
+  const slugIndex = segments.indexOf(slug);
+  const pageSegment = slugIndex >= 0 ? segments[slugIndex + 1] : undefined;
+  const humanize = (s: string) => s.replace(/-/g, ' ').replace(/(^|\s)\S/g, (t) => t.toUpperCase());
+  const pageTitle = pageSegment ? humanize(pageSegment) : undefined;
 
   useEffect(() => {
     if (!user) {
@@ -52,6 +60,25 @@ const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, 
     fetchWorkspaces();
   }, [user]);
 
+  // Listen for rename events so we can update local workspace list (sidebar, breadcrumb)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ev = e as CustomEvent<{ slug: string; name: string }>;
+      const { slug: renamedSlug, name } = ev.detail || {};
+      if (!renamedSlug) return;
+      setWorkspaces((prev) => prev.map((ws) => (ws.slug === renamedSlug ? { ...ws, name } : ws)));
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('workspace:renamed', handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('workspace:renamed', handler as EventListener);
+      }
+    };
+  }, []);
+
   if (loading) {
     return <WorkspaceLoading />;
   } else if (!activeWorkspace) {
@@ -61,7 +88,7 @@ const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, 
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex bg-background">
+      <div className="min-h-screen flex bg-background w-full">
         <AppSidebar workspaces={workspaces} activeWorkspace={activeWorkspace!} />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -74,14 +101,25 @@ const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, 
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
-                      Building Your Application
-                    </BreadcrumbLink>
+                    <BreadcrumbLink href="/">Workspaces</BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                  </BreadcrumbItem>
+
+                  {activeWorkspace && (
+                    <>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink href={`/w/${activeWorkspace.slug}`}>{activeWorkspace.name}</BreadcrumbLink>
+                      </BreadcrumbItem>
+                      {pageTitle && (
+                        <>
+                          <BreadcrumbSeparator className="hidden md:block" />
+                          <BreadcrumbItem>
+                            <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
+                          </BreadcrumbItem>
+                        </>
+                      )}
+                    </>
+                  )}
                 </BreadcrumbList>
               </Breadcrumb>
             </div>

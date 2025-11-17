@@ -1,68 +1,40 @@
 "use client";
 
-import { Frame, Map, PieChart, Settings2 } from 'lucide-react';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from '../ui/sidebar';
+import { Settings2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from '../ui/sidebar';
 import { NavMain } from "./nav-main";
-import { NavProjects } from "./nav-projects";
 import { NavUser } from "./nav-user";
 import { WorkspaceSwitcher } from "./workspace-switcher";
+// Settings are on their own page at /w/{slug}/settings
 
-const data = {
-  navMain: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
 
 type Workspace = { name: string, slug: string }
 
 const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], activeWorkspace: Workspace }) => {
+  const router = useRouter();
+
   return (
     <Sidebar collapsible="icon" >
       <SidebarHeader>
         <WorkspaceSwitcher workspaces={workspaces} activeWorkspace={activeWorkspace} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+
+        {/* Settings group with General -> rename workspace */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Platform</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <button onClick={() => router.push(`/w/${activeWorkspace?.slug}/settings`)}>
+                  <Settings2 />
+                  <span>Settings</span>
+                </button>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
@@ -70,6 +42,8 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
       </SidebarFooter>
 
       <SidebarRail />
+
+      {/* settings page available at /w/{slug}/settings */}
     </Sidebar>
   )
 }
