@@ -1,6 +1,6 @@
 'use client';
 
-import LogoutBtn from '@/components/auth/LogoutBtn';
+import LogoutBtn from '@/components/auth/logout-btn';
 import {
   Empty,
   EmptyContent,
@@ -8,8 +8,8 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from '@/components/ui/empty';
-import NewWorkspaceDialog from '@/components/workspace/NewWorkspaceDialog';
-import WorkspaceCard from '@/components/workspace/WorkspaceCard';
+import NewWorkspaceDialog from '@/components/workspace/new-workspace-dialog';
+import WorkspaceCard from '@/components/workspace/workspace-card';
 import { db } from '@/lib/firebaseConfig';
 import { useAuth } from '@/lib/useAuth';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';

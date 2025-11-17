@@ -1,4 +1,4 @@
-import AuthWrapper from "@/components/auth/AuthWrapper";
+import AuthWrapper from "@/components/auth/auth-wrapper";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
