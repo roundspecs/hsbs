@@ -111,10 +111,17 @@ export default function Home() {
               <h2 className="text-2xl font-semibold text-slate-900 mb-2">Your Workspaces</h2>
               <p className="text-slate-600">Select a workspace to continue working</p>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {workspaces.map((w) => (
-                <WorkspaceCard key={w.slug} name={w.name} slug={w.slug} />
+                <WorkspaceCard
+                  key={w.slug}
+                  name={w.name}
+                  slug={w.slug}
+                  onDeleted={(slug) =>
+                    setWorkspaces((prev) => prev.filter((ws) => ws.slug !== slug))
+                  }
+                />
               ))}
             </div>
           </div>
