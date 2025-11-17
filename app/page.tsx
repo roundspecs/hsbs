@@ -53,13 +53,13 @@ export default function Home() {
   }, [user]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <main className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100">
       {/* Header */}
       <div className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-linear-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shrink-0">
                 <span className="text-white font-bold text-xs sm:text-sm">H</span>
               </div>
               <div className="min-w-0 flex-1">
@@ -67,7 +67,7 @@ export default function Home() {
                 <p className="text-xs sm:text-sm text-slate-500 hidden sm:block">Manage your workspaces</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {workspaces.length > 0 && <NewWorkspaceDialog />}
               <LogoutBtn />
             </div>
