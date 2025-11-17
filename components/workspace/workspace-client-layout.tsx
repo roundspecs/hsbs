@@ -1,16 +1,15 @@
 "use client";
 
-import { Separator } from "@radix-ui/react-separator";
+import AppSidebar from '@/components/sidebar/app-sidebar';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import AppSidebar from '@/components/sidebar/app-sidebar';
-import { useAuth } from "@/lib/useAuth";
-import React, { useEffect, useState } from "react";
 import { db } from "@/lib/firebaseConfig";
-import { getDocs, collection, doc, getDoc } from "firebase/firestore";
-import { Spinner } from "../ui/spinner";
-import WorkspaceNoAccess from "./workspace-no-access";
+import { useAuth } from "@/lib/useAuth";
+import { Separator } from "@radix-ui/react-separator";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import WorkspaceLoading from "./workspace-loading";
+import WorkspaceNoAccess from "./workspace-no-access";
 
 type Workspace = { name: string; slug: string };
 

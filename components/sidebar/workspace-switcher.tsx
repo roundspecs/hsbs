@@ -1,7 +1,7 @@
 "use client"
 
+import { ChevronsUpDown, Home } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { ChevronsUpDown, Home, Zap } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -17,7 +17,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
+import { Avatar, AvatarFallback } from "../ui/avatar"
 
 type Workspace = { name: string, slug: string }
 
