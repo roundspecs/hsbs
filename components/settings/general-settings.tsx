@@ -92,10 +92,10 @@ export default function GeneralSettings({ slug }: { slug: string }) {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="space-y-2">
+          <div className="flex flex-col gap-1.5">
             <label
               htmlFor="workspace-name"
-              className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className="block text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
               Workspace Name
             </label>

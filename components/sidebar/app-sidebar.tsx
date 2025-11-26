@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Settings, Settings2, Users } from 'lucide-react';
+import { ChevronRight, Settings, Settings2, UserLock, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail } from '../ui/sidebar';
 import { NavUser } from "./nav-user";
@@ -22,7 +22,7 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
       <SidebarContent>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
+          <SidebarGroupLabel>ADMIN</SidebarGroupLabel>
           <Collapsible
             key="Settings"
             asChild
@@ -47,11 +47,11 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
                       </Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
-                  <SidebarMenuSubItem key="Members">
+                  <SidebarMenuSubItem key="Permissions">
                     <SidebarMenuSubButton asChild>
-                      <Link href={`/w/${activeWorkspace?.slug}/members-settings`}>
-                        <Users />
-                        <span>Members</span>
+                      <Link href={`/w/${activeWorkspace?.slug}/permissions-settings`}>
+                        <UserLock />
+                        <span>Permissions</span>
                       </Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -59,6 +59,16 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
               </CollapsibleContent>
             </SidebarMenuItem>
           </Collapsible>
+          <SidebarMenu key="Join Requests">
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Join Requests">
+                <Link href={`/w/${activeWorkspace?.slug}/join-requests`}>
+                  <Users />
+                  <span>Join Requests</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
 
