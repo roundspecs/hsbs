@@ -1,12 +1,13 @@
 "use client";
 
-import { Settings2 } from 'lucide-react';
+import { ChevronRight, Settings, Settings2, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from '../ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail } from '../ui/sidebar';
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import { WorkspaceSwitcher } from "./workspace-switcher";
-// Settings are on their own page at /w/{slug}/settings
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
+import Link from 'next/link';
 
 
 type Workspace = { name: string, slug: string }
@@ -21,19 +22,46 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
       </SidebarHeader>
       <SidebarContent>
 
-        {/* Settings group with General -> rename workspace */}
         <SidebarGroup>
           <SidebarGroupLabel>Platform</SidebarGroupLabel>
-          <SidebarMenu>
+          <Collapsible
+            key="Settings"
+            asChild
+            defaultOpen={false}
+            className="group/collapsible"
+          >
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <button onClick={() => router.push(`/w/${activeWorkspace?.slug}/settings`)}>
-                  <Settings2 />
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton tooltip="Settings">
+                  <Settings />
                   <span>Settings</span>
-                </button>
-              </SidebarMenuButton>
+                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  <SidebarMenuSubItem key="General">
+                    <SidebarMenuSubButton asChild>
+                      <Link className='cursor-pointer' href={`/w/${activeWorkspace?.slug}/general-settings`}>
+                        {/* icon */}
+                        <Settings2 />
+                        <span>General</span>
+                      </Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem key="Members">
+                    <SidebarMenuSubButton asChild>
+                      <Link className='cursor-pointer' href={`/w/${activeWorkspace?.slug}/members-settings`}>
+                        {/* icon */}
+                        <Users />
+                        <span>Members</span>
+                      </Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </CollapsibleContent>
             </SidebarMenuItem>
-          </SidebarMenu>
+          </Collapsible>
         </SidebarGroup>
       </SidebarContent>
 
