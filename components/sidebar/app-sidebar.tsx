@@ -3,7 +3,6 @@
 import { ChevronRight, Settings, Settings2, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail } from '../ui/sidebar';
-import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
@@ -42,8 +41,7 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
                 <SidebarMenuSub>
                   <SidebarMenuSubItem key="General">
                     <SidebarMenuSubButton asChild>
-                      <Link className='cursor-pointer' href={`/w/${activeWorkspace?.slug}/general-settings`}>
-                        {/* icon */}
+                      <Link href={`/w/${activeWorkspace?.slug}/general-settings`}>
                         <Settings2 />
                         <span>General</span>
                       </Link>
@@ -51,8 +49,7 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem key="Members">
                     <SidebarMenuSubButton asChild>
-                      <Link className='cursor-pointer' href={`/w/${activeWorkspace?.slug}/members-settings`}>
-                        {/* icon */}
+                      <Link href={`/w/${activeWorkspace?.slug}/members-settings`}>
                         <Users />
                         <span>Members</span>
                       </Link>
