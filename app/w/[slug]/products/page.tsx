@@ -35,6 +35,8 @@ import { MoreHorizontal, Plus, Search, Trash2 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ProductImporter } from "@/components/products/product-importer";
 
+import { EditProductDialog } from "@/components/products/edit-product-dialog";
+
 function ProductsContent({ slug }: { slug: string }) {
     const { user } = useAuth();
     const [products, setProducts] = useState<Product[]>([]);
@@ -42,6 +44,10 @@ function ProductsContent({ slug }: { slug: string }) {
     const [search, setSearch] = useState("");
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
+
+    // Edit state
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
     // New product form state
     const [newProduct, setNewProduct] = useState<Partial<Product>>({
@@ -53,6 +59,7 @@ function ProductsContent({ slug }: { slug: string }) {
 
     const { hasPermission: canCreate } = usePermission(slug, "createProduct");
     const { hasPermission: canDelete } = usePermission(slug, "deleteProduct");
+    const { hasPermission: canEdit } = usePermission(slug, "editProduct");
 
     const loadProducts = async () => {
         setLoading(true);
@@ -118,10 +125,10 @@ function ProductsContent({ slug }: { slug: string }) {
 
     return (
         <div className="max-w-6xl w-full">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <h2 className="text-lg font-semibold">Products</h2>
-                <div className="flex items-center gap-4">
-                    <div className="relative w-64">
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
+                    <div className="relative w-full md:w-64">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Search products..."
@@ -271,6 +278,15 @@ function ProductsContent({ slug }: { slug: string }) {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem
+                                                    onClick={() => {
+                                                        setEditingProduct(product);
+                                                        setIsEditDialogOpen(true);
+                                                    }}
+                                                    disabled={!canEdit}
+                                                >
+                                                    Edit
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
                                                     className="text-destructive focus:text-destructive"
                                                     onClick={() => handleDeleteProduct(product.id)}
                                                     disabled={!canDelete}
@@ -287,6 +303,18 @@ function ProductsContent({ slug }: { slug: string }) {
                     </TableBody>
                 </Table>
             </div>
+            {editingProduct && (
+                <EditProductDialog
+                    open={isEditDialogOpen}
+                    onOpenChange={(open) => {
+                        setIsEditDialogOpen(open);
+                        if (!open) setEditingProduct(null);
+                    }}
+                    product={editingProduct}
+                    slug={slug}
+                    onSuccess={loadProducts}
+                />
+            )}
         </div>
     );
 }

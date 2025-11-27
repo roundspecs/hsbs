@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebaseConfig";
-import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 
 export type Product = {
     id: string;
@@ -30,4 +30,9 @@ export async function addProduct(slug: string, data: Omit<Product, 'id'>) {
 export async function deleteProduct(slug: string, productId: string) {
     const productRef = doc(db, `workspaces/${slug}/products/${productId}`);
     await deleteDoc(productRef);
+}
+
+export async function updateProduct(slug: string, productId: string, data: Partial<Product>) {
+    const productRef = doc(db, `workspaces/${slug}/products/${productId}`);
+    await updateDoc(productRef, data);
 }
