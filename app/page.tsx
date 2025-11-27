@@ -131,9 +131,6 @@ export default function Home() {
                   key={w.slug}
                   name={w.name}
                   slug={w.slug}
-                  onDeleted={(slug) =>
-                    setWorkspaces((prev) => prev.filter((ws) => ws.slug !== slug))
-                  }
                 />
               ))}
             </div>
