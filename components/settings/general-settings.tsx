@@ -108,9 +108,9 @@ export default function GeneralSettings({ slug }: { slug: string }) {
   };
 
   return (
-    <main className="w-full p-4 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold">General Settings</h1>
+    <div className="max-w-4xl w-full">
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold">General Settings</h2>
       </div>
 
       {loading ? (
@@ -181,6 +181,6 @@ export default function GeneralSettings({ slug }: { slug: string }) {
           )}
         </div>
       )}
-    </main>
+    </div>
   );
 }
