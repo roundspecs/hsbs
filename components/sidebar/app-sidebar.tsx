@@ -80,7 +80,7 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem key="Permissions">
                     <SidebarMenuSubButton asChild>
-                      <Link href={`/w/${activeWorkspace?.slug}/permissions-settings`}>
+                      <Link href={`/w/${activeWorkspace?.slug}/permissions`}>
                         <UserLock />
                         <span>Permissions</span>
                       </Link>
