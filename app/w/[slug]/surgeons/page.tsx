@@ -25,12 +25,20 @@ import RequirePermission from "@/components/auth/RequirePermission";
 import { MoreHorizontal, Plus, Search, Trash2 } from "lucide-react";
 import { SurgeonImporter } from "@/components/surgeons/surgeon-importer";
 import { SurgeonDialog } from "@/components/surgeons/surgeon-dialog";
+import { isWorkspaceAdmin } from "@/lib/members";
 
 function SurgeonsContent({ slug }: { slug: string }) {
     const { user } = useAuth();
     const [surgeons, setSurgeons] = useState<Surgeon[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        if (user && slug) {
+            isWorkspaceAdmin(slug, user.uid).then(setIsAdmin);
+        }
+    }, [user, slug]);
 
     // Dialog states
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -90,7 +98,7 @@ function SurgeonsContent({ slug }: { slug: string }) {
                     </div>
                     {canManage && (
                         <>
-                            <SurgeonImporter slug={slug} />
+                            {isAdmin && <SurgeonImporter slug={slug} />}
                             <Button onClick={() => setIsAddDialogOpen(true)}>
                                 <Plus className="mr-2 h-4 w-4" />
                                 Add Surgeon

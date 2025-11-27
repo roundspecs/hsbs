@@ -36,6 +36,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ProductImporter } from "@/components/products/product-importer";
 
 import { EditProductDialog } from "@/components/products/edit-product-dialog";
+import { isWorkspaceAdmin } from "@/lib/members";
 
 function ProductsContent({ slug }: { slug: string }) {
     const { user } = useAuth();
@@ -44,6 +45,13 @@ function ProductsContent({ slug }: { slug: string }) {
     const [search, setSearch] = useState("");
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        if (user && slug) {
+            isWorkspaceAdmin(slug, user.uid).then(setIsAdmin);
+        }
+    }, [user, slug]);
 
     // Edit state
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -139,7 +147,7 @@ function ProductsContent({ slug }: { slug: string }) {
                     </div>
                     {canCreate && (
                         <>
-                            <ProductImporter slug={slug} />
+                            {isAdmin && <ProductImporter slug={slug} />}
                             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                                 <DialogTrigger asChild>
                                     <Button>
