@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebaseConfig";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { User } from "firebase/auth";
 
 /**
@@ -30,4 +30,23 @@ export async function createOrUpdateUser(user: User) {
         },
         { merge: true }
     );
+}
+
+export type UserProfile = {
+    uid: string;
+    name: string | null;
+    email: string | null;
+    photoUrl: string | null;
+};
+
+export async function getUsers(uids: string[]): Promise<UserProfile[]> {
+    if (!uids.length) return [];
+    const promises = uids.map(uid => getDoc(doc(db, "users", uid)));
+    const snaps = await Promise.all(promises);
+    return snaps.map(s => {
+        if (s.exists()) {
+            return s.data() as UserProfile;
+        }
+        return { uid: s.id, name: "Unknown", email: null, photoUrl: null };
+    });
 }

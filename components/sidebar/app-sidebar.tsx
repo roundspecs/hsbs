@@ -80,6 +80,14 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
                         </Link>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
+                    <SidebarMenuSubItem key="Members">
+                      <SidebarMenuSubButton asChild>
+                        <Link href={`/w/${activeWorkspace?.slug}/members`}>
+                          <Users />
+                          <span>Members</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>

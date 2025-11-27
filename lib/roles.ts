@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebaseConfig";
-import { doc, setDoc, getDocs, collection, getDoc, deleteDoc } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection, getDoc, deleteDoc, updateDoc } from "firebase/firestore";
 
 export async function createSystemRoles(slug: string) {
     // system roles
@@ -37,6 +37,11 @@ export async function createRole(slug: string, roleId: string, data: Omit<Role, 
         throw new Error("Role already exists");
     }
     await setDoc(roleRef, data);
+}
+
+export async function updateRole(slug: string, roleId: string, data: Partial<Role>) {
+    const roleRef = doc(db, `workspaces/${slug}/roles/${roleId}`);
+    await updateDoc(roleRef, data);
 }
 
 export async function deleteRole(slug: string, roleId: string) {

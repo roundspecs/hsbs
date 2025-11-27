@@ -21,11 +21,20 @@ import {
 import { db } from "@/lib/firebaseConfig";
 import { useAuth } from "@/lib/useAuth";
 import { isWorkspaceAdmin, getWorkspaceMembers } from "@/lib/members";
-import { getWorkspaceRoles, createRole, deleteRole, Role } from "@/lib/roles";
+import { getWorkspaceRoles, createRole, deleteRole, updateRole, Role } from "@/lib/roles";
+import { PERMISSIONS } from "@/lib/permissions";
+import { Checkbox } from "@/components/ui/checkbox";
 import { collection, getDocs } from "firebase/firestore";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import RequirePermission from "@/components/auth/RequirePermission";
+import { MoreHorizontal, Trash2, Shield } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function PermissionsContent({ slug }: { slug: string }) {
   const { user } = useAuth();
@@ -35,6 +44,8 @@ function PermissionsContent({ slug }: { slug: string }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [newRoleName, setNewRoleName] = useState("");
   const [creating, setCreating] = useState(false);
 
@@ -160,10 +171,33 @@ function PermissionsContent({ slug }: { slug: string }) {
     }
   };
 
+
+
+  const togglePermission = (key: string) => {
+    if (!editingRole) return;
+    const current = editingRole.permissions;
+    const updated = current.includes(key)
+      ? current.filter(p => p !== key)
+      : [...current, key];
+    setEditingRole({ ...editingRole, permissions: updated });
+  };
+
+  const handleSavePermissions = async () => {
+    if (!workspaceId || !editingRole) return;
+    try {
+      await updateRole(workspaceId, editingRole.id, { permissions: editingRole.permissions });
+      setRoles(prev => prev.map(r => r.id === editingRole.id ? editingRole : r));
+      setPermissionsDialogOpen(false);
+    } catch (err) {
+      console.error("Save permissions error:", err);
+      alert("Failed to save permissions");
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="max-w-4xl w-full">
+    <div className="max-w-6xl w-full">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Permissions & Roles</h2>
         {isAdmin && (
@@ -215,6 +249,55 @@ function PermissionsContent({ slug }: { slug: string }) {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={permissionsDialogOpen} onOpenChange={setPermissionsDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Permissions: {editingRole?.name}</DialogTitle>
+            <DialogDescription>
+              Manage permissions for this role.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-6 py-4">
+            {Object.entries(PERMISSIONS).map(([category, perms]) => (
+              <div key={category} className="space-y-3">
+                <h3 className="font-semibold capitalize border-b pb-1">{category}</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(perms).map(([key, label]) => (
+                    <div key={key} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`perm-${key}`}
+                        checked={editingRole?.permissions.includes(key) || editingRole?.permissions.includes("*")}
+                        disabled={editingRole?.permissions.includes("*") && key !== "*"}
+                        onCheckedChange={() => togglePermission(key)}
+                      />
+                      <label
+                        htmlFor={`perm-${key}`}
+                        className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setPermissionsDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSavePermissions}>
+              Save Permissions
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {!isAdmin && (
         <div className="mb-4 text-sm text-muted-foreground">
           You must be a workspace admin to manage roles.
@@ -224,45 +307,66 @@ function PermissionsContent({ slug }: { slug: string }) {
       {roles.length === 0 ? (
         <div className="rounded-md border p-4">No roles found.</div>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Role</TableHead>
-              <TableHead>Members</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {roles.map((role) => {
-              const canDelete = !role.isSystemRole && isAdmin;
-              return (
-                <TableRow key={role.id}>
-                  <TableCell className="font-medium">{role.name}</TableCell>
-                  <TableCell>{memberCounts[role.id] || 0}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={!isAdmin}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(role.id)}
-                        disabled={!canDelete}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Role</TableHead>
+                <TableHead>Members</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {roles.map((role) => {
+                const canDelete = !role.isSystemRole && isAdmin;
+                return (
+                  <TableRow key={role.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex flex-col">
+                        <span>{role.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {role.permissions.includes("*")
+                            ? "Full Access"
+                            : `${role.permissions.length} permissions`}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{memberCounts[role.id] || 0}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setEditingRole(role);
+                              setPermissionsDialogOpen(true);
+                            }}
+                            disabled={!isAdmin}
+                          >
+                            <Shield className="mr-2 h-4 w-4" />
+                            Edit Permissions
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => handleDelete(role.id)}
+                            disabled={!canDelete}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Role
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   );
