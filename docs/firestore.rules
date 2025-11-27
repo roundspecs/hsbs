@@ -43,7 +43,12 @@ service cloud.firestore {
         allow update, delete: if request.auth.uid == get(/databases/$(database)/documents/workspaces/$(workspaceId)).data.ownerUid;
       }
 
-      // You can extend similar matches later for /products, /invoices, etc.
+      // ---- Subcollection: products ----
+      match /products/{productId} {
+        allow read, write: if request.auth != null;
+      }
+
+      // You can extend similar matches later for /invoices, etc.
     }
   }
 }
