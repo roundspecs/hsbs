@@ -9,38 +9,29 @@ export default function AuthPage() {
   };
 
   return (
-    <main className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <main className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
+      <div className="w-full max-w-sm space-y-8">
         {/* Logo and Branding */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <span className="text-white font-bold text-2xl">H</span>
+        <div className="text-center">
+          <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <span className="text-primary-foreground font-bold text-xl">H</span>
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Health Stock & Billing
           </h1>
-          <p className="text-slate-600 text-lg">
-            Streamline your healthcare inventory management
+          <p className="text-muted-foreground mt-2">
+            Sign in to access your workspace
           </p>
         </div>
 
-        {/* Auth Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200 p-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-slate-900 mb-2">
-              Welcome Back
-            </h2>
-            <p className="text-slate-600">
-              Sign in to access your workspace
-            </p>
-          </div>
-
+        {/* Auth Button */}
+        <div className="space-y-4">
           <Button
             variant="outline"
             onClick={handleLogin}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 h-12 border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 font-medium"
+            className="w-full h-11"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -61,20 +52,17 @@ export default function AuthPage() {
             Continue with Google
           </Button>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-slate-500">
-              By signing in, you agree to our{' '}
-              <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
-                Terms of Service
-              </a>{' '}
-              and{' '}
-              <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
-                Privacy Policy
-              </a>
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            By signing in, you agree to our{' '}
+            <a href="#" className="underline hover:text-primary">
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a href="#" className="underline hover:text-primary">
+              Privacy Policy
+            </a>
+          </p>
         </div>
-
       </div>
     </main>
   );
