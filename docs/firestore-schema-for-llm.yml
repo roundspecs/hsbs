@@ -1,0 +1,105 @@
+database: "(default)"
+
+collections:
+  - collection: users
+    description: "Global user directory. Document ID is always equal to the Firebase Authentication UID."
+    document_id: "<uid:string>"
+    fields:
+      uid:
+        type: string
+        description: "User UID (duplicate of document ID)."
+      name:
+        type: string
+        description: "User's display name from Google OAuth."
+      email:
+        type: string
+        description: "User's email address."
+      photoUrl:
+        type: string
+        description: "Public URL to the user's Google profile image."
+      createdAt:
+        type: timestamp
+        description: "Timestamp when the user document was first created."
+      lastLogin:
+        type: timestamp
+        description: "Timestamp of the most recent successful login."
+    subcollections: []
+
+  - collection: workspaces
+    description: "Root container for tenant workspaces. Each document ID equals the workspace slug (URL‑friendly identifier)."
+    document_id: "<slug:string>"
+    fields:
+      slug:
+        type: string
+        description: "Workspace slug and unique document ID."
+      name:
+        type: string
+        description: "Human‑readable workspace name."
+      ownerUid:
+        type: string -> /users/{uid}
+        description: "UID of the workspace owner or creator."
+      createdAt:
+        type: timestamp
+        description: "Workspace creation timestamp."
+    subcollections:
+
+      - subcollection: joinRequests
+        description: "Requests from users who want to join this workspace."
+        document_id: "<auto-id:string>"
+        fields:
+          uid:
+            type: string -> /users/{uid}
+            description: "UID of requesting user."
+          name:
+            type: string
+            description: "Display name of requester."
+          email:
+            type: string
+            description: "Email of requester."
+          message:
+            type: string
+            description: "Text message included with request."
+          createdAt:
+            type: timestamp
+            description: "When the join request was created."
+        subcollections: []
+
+      - subcollection: members
+        description: "Users who belong to the workspace, with assigned roles."
+        document_id: "<uid:string>"
+        fields:
+          userUid:
+            type: string -> /users/{uid}
+            description: "UID of the user."
+          roles:
+            type: array[string]
+            description: "List of role IDs assigned to the user (e.g., ['admin'])."
+          joinedAt:
+            type: timestamp
+            description: "When the user joined the workspace."
+        subcollections: []
+
+      - subcollection: roles
+        description: "Role definitions and permissions available in the workspace."
+        document_id: "<roleId:string>"
+        fields:
+          name:
+            type: string
+            description: "Role name, same as document ID."
+          isSystemRole:
+            type: boolean
+            description: "True for built‑in roles like 'admin' or 'default'."
+          permissions:
+            type: array[string]
+            description: "List of permission keys controlling access."
+        subcollections: []
+
+relationships:
+  - "/users/{uid}" <-> "/workspaces/{slug}/members/{uid}" : "Users can appear in many workspaces as members."
+  - "/workspaces/{slug}/roles/{roleId}" -> "Referenced by members.roles to determine effective permissions."
+  - "/workspaces/{slug}/joinRequests/{id}" -> "When approved, converted into /members/{uid} document."
+
+security_rules_summary:
+  - "Users can read/write only their own /users/{uid}."
+  - "Authenticated users can read/write workspace data only if they have a membership document under /workspaces/{slug}/members/{uid}."
+  - "Admins (role 'admin') have unrestricted permissions within their workspace."

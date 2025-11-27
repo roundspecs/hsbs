@@ -7,12 +7,42 @@ import { NavUser } from "./nav-user";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
 import Link from 'next/link';
+import { useAuth } from '@/lib/useAuth';
+import { useEffect, useState } from 'react';
+import { db } from '@/lib/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 
 
 type Workspace = { name: string, slug: string }
 
 const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], activeWorkspace: Workspace }) => {
   const router = useRouter();
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user || !activeWorkspace?.slug) {
+      setIsAdmin(false);
+      return;
+    }
+
+    const checkAdmin = async () => {
+      try {
+        const wsSnap = await getDoc(doc(db, 'workspaces', activeWorkspace.slug));
+        if (!wsSnap.exists()) return;
+
+        const memberRef = doc(db, `workspaces/${activeWorkspace.slug}/members/${user.uid}`);
+        const memberSnap = await getDoc(memberRef);
+        const roles = memberSnap.exists() ? (memberSnap.data() as any)?.roles : [];
+        setIsAdmin(Array.isArray(roles) && roles.includes('admin'));
+      } catch (err) {
+        console.error('Error checking admin status:', err);
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdmin();
+  }, [user, activeWorkspace?.slug]);
 
   return (
     <Sidebar collapsible="icon" >
@@ -21,6 +51,7 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
       </SidebarHeader>
       <SidebarContent>
 
+        {isAdmin && (
         <SidebarGroup>
           <SidebarGroupLabel>ADMIN</SidebarGroupLabel>
           <Collapsible
@@ -70,6 +101,7 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>

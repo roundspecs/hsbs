@@ -18,6 +18,7 @@ const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, 
   const { user } = useAuth();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
+  const [requestedWorkspace, setRequestedWorkspace] = useState<{ id: string; name: string } | null>(null);
   const activeWorkspace: Workspace | undefined = workspaces.find(workspace => workspace.slug === slug);
 
   const pathname = usePathname();
@@ -38,18 +39,27 @@ const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, 
       try {
         const wsSnap = await getDocs(collection(db, 'workspaces'));
         const result: { name: string; slug: string }[] = [];
+        let foundRequestedWorkspace: { id: string; name: string } | null = null;
 
-        // check each workspace’s members subcollection for current user
+        // check each workspace's members subcollection for current user
         for (const wsDoc of wsSnap.docs) {
+          const wsData = wsDoc.data() as any;
+          
+          // Check if this is the workspace being requested
+          if (wsData.slug === slug) {
+            foundRequestedWorkspace = { id: wsDoc.id, name: wsData.name };
+          }
+
           const memberRef = doc(db, `workspaces/${wsDoc.id}/members/${user.uid}`);
           const memberSnap = await getDoc(memberRef);
           if (memberSnap.exists()) {
-            const { name, slug } = wsDoc.data() as any;
+            const { name, slug } = wsData;
             result.push({ name, slug });
           }
         }
 
         setWorkspaces(result);
+        setRequestedWorkspace(foundRequestedWorkspace);
       } catch (err) {
         console.error('Error loading workspaces:', err);
       } finally {
@@ -58,7 +68,7 @@ const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, 
     };
 
     fetchWorkspaces();
-  }, [user]);
+  }, [user, slug]);
 
   // Listen for rename events so we can update local workspace list (sidebar, breadcrumb)
   useEffect(() => {
@@ -82,7 +92,7 @@ const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, 
   if (loading) {
     return <WorkspaceLoading />;
   } else if (!activeWorkspace) {
-    return <WorkspaceNoAccess />;
+    return <WorkspaceNoAccess workspaceId={requestedWorkspace?.id || ''} workspaceName={requestedWorkspace?.name} />;
   }
 
 

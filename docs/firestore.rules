@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- USERS ----------
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ---------- WORKSPACES ----------
+    match /workspaces/{workspaceId} {
+      // create allowed for any signed‑in user
+      allow create: if request.auth != null;
+
+      // read everything for signed‑in users (you can restrict later)
+      allow read: if request.auth != null;
+
+      // only the workspace owner can update or delete the document itself
+      allow update, delete: if request.auth.uid == resource.data.ownerUid;
+
+      // ---- Subcollection: roles ----
+      match /roles/{roleId} {
+        allow read, write: if request.auth != null;
+      }
+
+      // ---- Subcollection: members ----
+      match /members/{memberId} {
+        allow read, write: if request.auth != null;
+      }
+
+      // ---- Subcollection: joinRequests ----
+      match /joinRequests/{requestId} {
+        // Any authenticated user can create a join request
+        allow create: if request.auth != null;
+        
+        // Users can read their own requests, workspace owner can read all
+        allow read: if request.auth != null && 
+          (request.auth.uid == resource.data.uid || 
+           request.auth.uid == get(/databases/$(database)/documents/workspaces/$(workspaceId)).data.ownerUid);
+        
+        // Only workspace owner can update/delete requests
+        allow update, delete: if request.auth.uid == get(/databases/$(database)/documents/workspaces/$(workspaceId)).data.ownerUid;
+      }
+
+      // You can extend similar matches later for /products, /invoices, etc.
+    }
+  }
+}
