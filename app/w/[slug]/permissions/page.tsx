@@ -25,16 +25,10 @@ import { getWorkspaceRoles, createRole, deleteRole, Role } from "@/lib/roles";
 import { collection, getDocs } from "firebase/firestore";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import RequirePermission from "@/components/auth/RequirePermission";
 
-
-
-export default function PermissionsPage() {
+function PermissionsContent({ slug }: { slug: string }) {
   const { user } = useAuth();
-  const pathname = usePathname();
-  const segments = pathname?.split("/").filter(Boolean) ?? [];
-  const wIndex = segments.indexOf("w");
-  const slug = wIndex >= 0 ? segments[wIndex + 1] : segments[0];
-
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
@@ -271,5 +265,20 @@ export default function PermissionsPage() {
         </Table>
       )}
     </div>
+  );
+}
+
+export default function PermissionsPage() {
+  const pathname = usePathname();
+  const segments = pathname?.split("/").filter(Boolean) ?? [];
+  const wIndex = segments.indexOf("w");
+  const slug = wIndex >= 0 ? segments[wIndex + 1] : segments[0];
+
+  if (!slug) return null;
+
+  return (
+    <RequirePermission workspaceSlug={slug} permission="manageRoles">
+      <PermissionsContent slug={slug} />
+    </RequirePermission>
   );
 }

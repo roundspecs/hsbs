@@ -16,6 +16,7 @@ import { db } from "@/lib/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import RequirePermission from "@/components/auth/RequirePermission";
 
 type JoinRequest = {
   id: string;
@@ -26,14 +27,8 @@ type JoinRequest = {
   createdAt?: any;
 };
 
-export default function JoinRequestsPage() {
+function JoinRequestsContent({ slug }: { slug: string }) {
   const { user } = useAuth();
-  const pathname = usePathname();
-  const segments = pathname?.split("/").filter(Boolean) ?? [];
-  // Path looks like: /w/[slug]/join-requests — find slug after 'w'
-  const wIndex = segments.indexOf("w");
-  const slug = wIndex >= 0 ? segments[wIndex + 1] : segments[0];
-
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [requests, setRequests] = useState<JoinRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,5 +150,20 @@ export default function JoinRequestsPage() {
         </Table>
       )}
     </div>
+  );
+}
+
+export default function JoinRequestsPage() {
+  const pathname = usePathname();
+  const segments = pathname?.split("/").filter(Boolean) ?? [];
+  const wIndex = segments.indexOf("w");
+  const slug = wIndex >= 0 ? segments[wIndex + 1] : segments[0];
+
+  if (!slug) return null;
+
+  return (
+    <RequirePermission workspaceSlug={slug} permission="manageInvites">
+      <JoinRequestsContent slug={slug} />
+    </RequirePermission>
   );
 }
