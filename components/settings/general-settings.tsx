@@ -9,6 +9,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Skeleton } from "../ui/skeleton";
 import { Spinner } from "../ui/spinner";
+import { deleteWorkspace } from "@/lib/workspace";
 
 interface Workspace {
   name: string;
@@ -90,20 +91,19 @@ export default function GeneralSettings({ slug }: { slug: string }) {
 
   const handleDelete = async () => {
     if (!slug || !isAdmin) return;
-    
+
     const confirmed = confirm(
       `Are you sure you want to delete the workspace "${name}"? This action cannot be undone.`
     );
-    
+
     if (!confirmed) return;
 
     setDeleting(true);
     setError("");
 
     try {
-      const wsRef = doc(db, "workspaces", slug);
-      await deleteDoc(wsRef);
-      
+      await deleteWorkspace(slug);
+
       router.push("/");
     } catch (err) {
       console.error("Failed to delete workspace:", err);
