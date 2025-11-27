@@ -48,6 +48,11 @@ service cloud.firestore {
         allow read, write: if request.auth != null;
       }
 
+      // ---- Subcollection: surgeons ----
+      match /surgeons/{surgeonId} {
+        allow read, write: if request.auth != null;
+      }
+
       // You can extend similar matches later for /invoices, etc.
     }
   }

@@ -24,11 +24,9 @@ export const PERMISSIONS = {
         editInvoice: "Edit invoices",
         deleteInvoice: "Delete invoices",
     },
-    clients: {
-        viewClients: "View clients",
-        addClient: "Add clients",
-        editClient: "Edit clients",
-        deleteClient: "Delete clients",
+    surgeons: {
+        viewSurgeons: "View surgeons",
+        manageSurgeons: "Manage surgeons",
     },
     analytics: {
         viewAnalytics: "View analytics",
