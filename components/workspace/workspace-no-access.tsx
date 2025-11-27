@@ -4,9 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
-import { db } from '@/lib/firebaseConfig';
 import { useAuth } from '@/lib/useAuth';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { checkPendingRequest, createJoinRequest } from '@/lib/join-requests';
 import { Lock, Send, CheckCircle, ArrowLeft } from 'lucide-react';
 
 type WorkspaceNoAccessProps = {
@@ -28,23 +27,21 @@ const WorkspaceNoAccess = ({ workspaceId, workspaceName }: WorkspaceNoAccessProp
     setLoading(true);
     try {
       // Check if user already has a pending request
-      const requestsRef = collection(db, `workspaces/${workspaceId}/joinRequests`);
-      const q = query(requestsRef, where('uid', '==', user.uid));
-      const existingRequests = await getDocs(q);
+      const hasPending = await checkPendingRequest(workspaceId, user.uid);
 
-      if (!existingRequests.empty) {
+      if (hasPending) {
         alert('You already have a pending request for this workspace.');
         setLoading(false);
         return;
       }
 
       // Create join request
-      await addDoc(collection(db, `workspaces/${workspaceId}/joinRequests`), {
+      await createJoinRequest(workspaceId, {
         uid: user.uid,
         name: user.displayName || null,
         email: user.email || null,
         message: message.trim() || null,
-        createdAt: serverTimestamp(),
+        createdAt: null // Helper adds serverTimestamp
       });
 
       setRequestSent(true);

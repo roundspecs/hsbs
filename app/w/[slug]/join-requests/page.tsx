@@ -9,17 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { db } from "@/lib/firebaseConfig";
 import { useAuth } from "@/lib/useAuth";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  serverTimestamp,
-  setDoc,
-} from "firebase/firestore";
+import { isWorkspaceAdmin } from "@/lib/members";
+import { getJoinRequests, approveJoinRequest, rejectJoinRequest } from "@/lib/join-requests";
+import { db } from "@/lib/firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -79,14 +73,11 @@ export default function JoinRequestsPage() {
       try {
         // check if current user is admin/owner
         if (user) {
-          const memberRef = doc(db, `workspaces/${workspaceId}/members/${user.uid}`);
-          const memberSnap = await getDoc(memberRef);
-          const roles = memberSnap.exists() ? (memberSnap.data() as any)?.roles : [];
-          setIsAdmin(Array.isArray(roles) && roles.includes("admin"));
+          const admin = await isWorkspaceAdmin(workspaceId, user.uid);
+          setIsAdmin(admin);
         }
 
-        const reqSnap = await getDocs(collection(db, `workspaces/${workspaceId}/joinRequests`));
-        const list: JoinRequest[] = reqSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+        const list = await getJoinRequests(workspaceId);
         setRequests(list);
       } catch (err) {
         console.error("Error loading join requests:", err);
@@ -101,14 +92,7 @@ export default function JoinRequestsPage() {
   const approve = async (r: JoinRequest) => {
     if (!workspaceId || !r.uid) return;
     try {
-      // add to members subcollection
-      await setDoc(doc(db, `workspaces/${workspaceId}/members/${r.uid}`), {
-        userUid: r.uid,
-        roles: ["default"],
-        joinedAt: serverTimestamp(),
-      });
-      // remove request
-      await deleteDoc(doc(db, `workspaces/${workspaceId}/joinRequests/${r.id}`));
+      await approveJoinRequest(workspaceId, { id: r.id, uid: r.uid });
       setRequests((prev) => prev.filter((x) => x.id !== r.id));
     } catch (err) {
       console.error("Approve error:", err);
@@ -118,7 +102,7 @@ export default function JoinRequestsPage() {
   const reject = async (r: JoinRequest) => {
     if (!workspaceId) return;
     try {
-      await deleteDoc(doc(db, `workspaces/${workspaceId}/joinRequests/${r.id}`));
+      await rejectJoinRequest(workspaceId, r.id);
       setRequests((prev) => prev.filter((x) => x.id !== r.id));
     } catch (err) {
       console.error("Reject error:", err);

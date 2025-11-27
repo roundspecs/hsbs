@@ -3,10 +3,9 @@
 import AppSidebar from '@/components/sidebar/app-sidebar';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { db } from "@/lib/firebaseConfig";
 import { useAuth } from "@/lib/useAuth";
+import { getUserWorkspaces, getWorkspace } from "@/lib/workspaces";
 import { Separator } from "@radix-ui/react-separator";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from "react";
 import WorkspaceLoading from "./workspace-loading";
@@ -37,24 +36,30 @@ const WorkspaceClientLayout = ({ children, slug }: { children: React.ReactNode, 
     const fetchWorkspaces = async () => {
       setLoading(true);
       try {
-        const wsSnap = await getDocs(collection(db, 'workspaces'));
-        const result: { name: string; slug: string }[] = [];
+        const result = await getUserWorkspaces(user.uid);
         let foundRequestedWorkspace: { id: string; name: string } | null = null;
 
-        // check each workspace's members subcollection for current user
-        for (const wsDoc of wsSnap.docs) {
-          const wsData = wsDoc.data() as any;
-          
-          // Check if this is the workspace being requested
-          if (wsData.slug === slug) {
-            foundRequestedWorkspace = { id: wsDoc.id, name: wsData.name };
-          }
+        // Check if the requested workspace is in the user's list
+        // Note: getUserWorkspaces returns { name, slug }, but we need ID for WorkspaceNoAccess if not found?
+        // Actually WorkspaceNoAccess takes workspaceId, but getUserWorkspaces returns slug.
+        // The original code used wsDoc.id which is the slug.
+        // So we can just check if slug is in the result.
 
-          const memberRef = doc(db, `workspaces/${wsDoc.id}/members/${user.uid}`);
-          const memberSnap = await getDoc(memberRef);
-          if (memberSnap.exists()) {
-            const { name, slug } = wsData;
-            result.push({ name, slug });
+        // Wait, the original code set foundRequestedWorkspace even if the user wasn't a member?
+        // "Check if this is the workspace being requested... if (wsData.slug === slug) foundRequestedWorkspace..."
+        // Yes, it scans ALL workspaces to find the name of the requested one even if access is denied.
+        // getUserWorkspaces ONLY returns workspaces the user is a member of.
+        // So we need a separate call to get the workspace details if it's not in the list.
+
+        const active = result.find(w => w.slug === slug);
+        if (active) {
+          foundRequestedWorkspace = { id: active.slug, name: active.name };
+        } else {
+          // If not in user's list, try to fetch it directly to get the name for the "No Access" screen
+          // We need a helper for this: getWorkspace(slug)
+          const ws = await getWorkspace(slug);
+          if (ws) {
+            foundRequestedWorkspace = { id: ws.slug, name: ws.name };
           }
         }
 

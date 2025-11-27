@@ -20,23 +20,13 @@ import {
 } from "@/components/ui/table";
 import { db } from "@/lib/firebaseConfig";
 import { useAuth } from "@/lib/useAuth";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-} from "firebase/firestore";
+import { isWorkspaceAdmin, getWorkspaceMembers } from "@/lib/members";
+import { getWorkspaceRoles, createRole, deleteRole, Role } from "@/lib/roles";
+import { collection, getDocs } from "firebase/firestore";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type Role = {
-  id: string;
-  name: string;
-  isSystemRole: boolean;
-  permissions: string[];
-};
+
 
 export default function PermissionsPage() {
   const { user } = useAuth();
@@ -88,26 +78,20 @@ export default function PermissionsPage() {
       try {
         // check if current user is admin
         if (user) {
-          const memberRef = doc(db, `workspaces/${workspaceId}/members/${user.uid}`);
-          const memberSnap = await getDoc(memberRef);
-          const userRoles = memberSnap.exists() ? (memberSnap.data() as any)?.roles : [];
-          setIsAdmin(Array.isArray(userRoles) && userRoles.includes("admin"));
+          const admin = await isWorkspaceAdmin(workspaceId, user.uid);
+          setIsAdmin(admin);
         }
 
         // load roles
-        const rolesSnap = await getDocs(collection(db, `workspaces/${workspaceId}/roles`));
-        const rolesList: Role[] = rolesSnap.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as any),
-        }));
+        const rolesList = await getWorkspaceRoles(workspaceId);
         setRoles(rolesList);
 
         // count members per role
-        const membersSnap = await getDocs(collection(db, `workspaces/${workspaceId}/members`));
+        const members = await getWorkspaceMembers(workspaceId);
         const counts: Record<string, number> = {};
 
-        membersSnap.docs.forEach((memberDoc) => {
-          const memberRoles = (memberDoc.data() as any)?.roles || [];
+        members.forEach((member) => {
+          const memberRoles = member.roles || [];
           memberRoles.forEach((roleId: string) => {
             counts[roleId] = (counts[roleId] || 0) + 1;
           });
@@ -129,7 +113,7 @@ export default function PermissionsPage() {
     if (!confirm(`Are you sure you want to delete the role "${roleId}"?`)) return;
 
     try {
-      await deleteDoc(doc(db, `workspaces/${workspaceId}/roles/${roleId}`));
+      await deleteRole(workspaceId, roleId);
       setRoles((prev) => prev.filter((r) => r.id !== roleId));
     } catch (err) {
       console.error("Delete error:", err);
@@ -155,18 +139,7 @@ export default function PermissionsPage() {
     setCreating(true);
 
     try {
-      // check if role already exists
-      const roleRef = doc(db, `workspaces/${workspaceId}/roles/${roleId}`);
-      const roleSnap = await getDoc(roleRef);
-
-      if (roleSnap.exists()) {
-        alert("A role with this name already exists");
-        setCreating(false);
-        return;
-      }
-
-      // create new role
-      await setDoc(roleRef, {
+      await createRole(workspaceId, roleId, {
         name: roleId,
         isSystemRole: false,
         permissions: [],

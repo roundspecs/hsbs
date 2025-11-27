@@ -1,13 +1,9 @@
 "use client";
 
-import { db } from "@/lib/firebaseConfig";
 import { useAuth } from "@/lib/useAuth";
-import {
-  doc,
-  getDoc,
-  serverTimestamp,
-  setDoc
-} from "firebase/firestore";
+import { createWorkspace } from "@/lib/workspaces";
+import { createSystemRoles } from "@/lib/roles";
+import { addWorkspaceMember } from "@/lib/members";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Button } from "../ui/button";
@@ -46,41 +42,13 @@ export default function NewWorkspaceDialog() {
 
     try {
       // create workspace doc
-      const wsRef = doc(db, "workspaces", slug);
-
-      // 🚦 1️⃣ Check if this slug already exists
-      const existing = await getDoc(wsRef);
-      if (existing.exists()) {
-        alert("That workspace slug already exists. Please choose another name.");
-        setLoading(false);
-        return; // stop creation
-      }
-
-      await setDoc(wsRef, {
-        name,
-        slug,
-        ownerUid: user.uid,
-        createdAt: serverTimestamp(),
-      });
+      await createWorkspace(name, slug, user.uid);
 
       // system roles
-      await setDoc(doc(db, `workspaces/${slug}/roles/default`), {
-        name: "default",
-        isSystemRole: true,
-        permissions: ["viewProducts", "viewReports"],
-      });
-      await setDoc(doc(db, `workspaces/${slug}/roles/admin`), {
-        name: "admin",
-        isSystemRole: true,
-        permissions: ["*"],
-      });
+      await createSystemRoles(slug);
 
       // add creator as admin
-      await setDoc(doc(db, `workspaces/${slug}/members/${user.uid}`), {
-        userUid: user.uid,
-        roles: ["admin"],
-        joinedAt: serverTimestamp(),
-      });
+      await addWorkspaceMember(slug, user.uid, ["admin"]);
 
       setOpen(false);
       setName("");

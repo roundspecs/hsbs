@@ -12,7 +12,7 @@ import NewWorkspaceDialog from '@/components/workspace/new-workspace-dialog';
 import WorkspaceCard from '@/components/workspace/workspace-card';
 import { db } from '@/lib/firebaseConfig';
 import { useAuth } from '@/lib/useAuth';
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { getUserWorkspaces } from '@/lib/workspaces';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
@@ -28,19 +28,7 @@ export default function Home() {
 
     const fetchWorkspaces = async () => {
       try {
-        const wsSnap = await getDocs(collection(db, 'workspaces'));
-        const result: { name: string; slug: string }[] = [];
-
-        // check each workspace's members subcollection for current user
-        for (const wsDoc of wsSnap.docs) {
-          const memberRef = doc(db, `workspaces/${wsDoc.id}/members/${user.uid}`);
-          const memberSnap = await getDoc(memberRef);
-          if (memberSnap.exists()) {
-            const { name, slug } = wsDoc.data() as any;
-            result.push({ name, slug });
-          }
-        }
-
+        const result = await getUserWorkspaces(user.uid);
         setWorkspaces(result);
       } catch (err) {
         console.error('Error loading workspaces:', err);

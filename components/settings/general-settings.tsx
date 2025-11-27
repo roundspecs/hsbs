@@ -1,15 +1,15 @@
 "use client";
 
-import { db } from "@/lib/firebaseConfig";
 import { useAuth } from "@/lib/useAuth";
-import { deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getWorkspace, updateWorkspaceName } from "@/lib/workspaces";
+import { isWorkspaceAdmin } from "@/lib/members";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Skeleton } from "../ui/skeleton";
 import { Spinner } from "../ui/spinner";
-import { deleteWorkspace } from "@/lib/workspace";
+import { deleteWorkspace } from "@/lib/workspaces";
 
 interface Workspace {
   name: string;
@@ -32,21 +32,17 @@ export default function GeneralSettings({ slug }: { slug: string }) {
     const fetch = async () => {
       setLoading(true);
       try {
-        const wsRef = doc(db, "workspaces", slug);
-        const snap = await getDoc(wsRef);
-        if (snap.exists()) {
-          const data = snap.data() as Workspace;
-          setName(data.name ?? "");
+        const ws = await getWorkspace(slug);
+        if (ws) {
+          setName(ws.name ?? "");
         } else {
           setName("");
         }
 
         // check if user is admin
         if (user) {
-          const memberRef = doc(db, `workspaces/${slug}/members/${user.uid}`);
-          const memberSnap = await getDoc(memberRef);
-          const roles = memberSnap.exists() ? (memberSnap.data() as any)?.roles : [];
-          setIsAdmin(Array.isArray(roles) && roles.includes("admin"));
+          const admin = await isWorkspaceAdmin(slug, user.uid);
+          setIsAdmin(admin);
         }
       } catch (err) {
         console.error("Failed to load workspace:", err);
@@ -66,8 +62,7 @@ export default function GeneralSettings({ slug }: { slug: string }) {
     setError("");
 
     try {
-      const wsRef = doc(db, "workspaces", slug);
-      await updateDoc(wsRef, { name: name.trim() });
+      await updateWorkspaceName(slug, name);
 
       // dispatch event to update other parts of the app
       if (typeof window !== "undefined") {
