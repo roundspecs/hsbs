@@ -245,7 +245,7 @@ function ProductsContent({ slug }: { slug: string }) {
                         <TableRow>
                             <TableHead>Product No</TableHead>
                             <TableHead>Name</TableHead>
-                            <TableHead>Unit Price</TableHead>
+                            <TableHead>Unit Price (BDT)</TableHead>
                             <TableHead>Stock</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
@@ -272,8 +272,8 @@ function ProductsContent({ slug }: { slug: string }) {
                                     <TableCell>{product.name}</TableCell>
                                     <TableCell>
                                         {new Intl.NumberFormat("en-BD", {
-                                            style: "currency",
-                                            currency: "BDT",
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
                                         }).format(product.unitPrice)}
                                     </TableCell>
                                     <TableCell>{product.stock}</TableCell>
