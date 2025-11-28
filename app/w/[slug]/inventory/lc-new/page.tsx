@@ -5,7 +5,19 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, Check, ChevronsUpDown, Plus, Trash2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { CalendarIcon, Check, ChevronsUpDown, Plus, Trash2, AlertTriangle } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -66,6 +78,8 @@ function LCEntryContent({ slug }: { slug: string }) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loadingProducts, setLoadingProducts] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [pendingData, setPendingData] = useState<LCEntryFormValues | null>(null);
 
     const form = useForm<LCEntryFormValues>({
         resolver: zodResolver(lcEntrySchema),
@@ -96,16 +110,16 @@ function LCEntryContent({ slug }: { slug: string }) {
         if (slug) fetchProducts();
     }, [slug]);
 
-    const onSubmit = async (data: LCEntryFormValues) => {
-        if (!user) return;
+    const handleConfirmSubmit = async () => {
+        if (!user || !pendingData) return;
         setSubmitting(true);
         try {
-            const totalAmount = data.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+            const totalAmount = pendingData.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
 
             await createLCEntry(slug, {
-                referenceNumber: data.referenceNumber,
-                date: data.date,
-                items: data.items,
+                referenceNumber: pendingData.referenceNumber,
+                date: pendingData.date,
+                items: pendingData.items,
                 totalAmount,
                 createdBy: user.uid,
             });
@@ -126,7 +140,14 @@ function LCEntryContent({ slug }: { slug: string }) {
             }
         } finally {
             setSubmitting(false);
+            setConfirmOpen(false);
+            setPendingData(null);
         }
+    };
+
+    const onSubmit = (data: LCEntryFormValues) => {
+        setPendingData(data);
+        setConfirmOpen(true);
     };
 
     const watchedItems = form.watch("items");
@@ -142,8 +163,17 @@ function LCEntryContent({ slug }: { slug: string }) {
         <div className="max-w-6xl w-full">
             <h2 className="text-lg font-semibold mb-6">New LC Entry (Stock-In)</h2>
 
+            <Alert className="mb-6 border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-100 dark:border-amber-500/30">
+                <AlertTriangle className="h-4 w-4 stroke-amber-600 dark:stroke-amber-400" />
+                <AlertTitle className="text-amber-800 dark:text-amber-300">Important</AlertTitle>
+                <AlertDescription className="text-amber-700 dark:text-amber-400">
+                    Please verify all details before submitting. To maintain inventory integrity, LC Entries cannot be edited or deleted once created.
+                </AlertDescription>
+            </Alert>
+
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    {/* ... existing form fields ... */}
                     <div className="flex flex-col md:flex-row gap-6">
                         <FormField
                             control={form.control}
@@ -371,6 +401,24 @@ function LCEntryContent({ slug }: { slug: string }) {
                     </div>
                 </form>
             </Form>
+
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Submission</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure this data is correct? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={submitting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmSubmit} disabled={submitting}>
+                            {submitting && <Spinner className="mr-2 h-4 w-4" />}
+                            Confirm Submit
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
