@@ -6,6 +6,7 @@ export type Workspace = {
   slug: string;
   ownerUid?: string;
   createdAt?: any;
+  lowStockThreshold?: number;
 };
 
 /**
@@ -50,7 +51,7 @@ export async function getUserWorkspaces(uid: string): Promise<Workspace[]> {
     const memberSnap = await getDoc(memberRef);
     if (memberSnap.exists()) {
       const data = wsDoc.data();
-      result.push({ name: data.name, slug: data.slug });
+      result.push({ name: data.name, slug: data.slug, lowStockThreshold: data.lowStockThreshold });
     }
   }
   return result;
@@ -68,10 +69,16 @@ export async function createWorkspace(name: string, slug: string, ownerUid: stri
     slug,
     ownerUid,
     createdAt: serverTimestamp(),
+    lowStockThreshold: 3, // Default value
   });
 }
 
 export async function updateWorkspaceName(slug: string, name: string) {
   const wsRef = doc(db, "workspaces", slug);
   await updateDoc(wsRef, { name: name.trim() });
+}
+
+export async function updateWorkspaceSettings(slug: string, data: { lowStockThreshold: number }) {
+  const wsRef = doc(db, "workspaces", slug);
+  await updateDoc(wsRef, data);
 }

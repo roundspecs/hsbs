@@ -3,7 +3,7 @@
 import { useAuth } from "@/lib/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getWorkspace, updateWorkspaceName } from "@/lib/workspaces";
+import { getWorkspace, updateWorkspaceName, updateWorkspaceSettings } from "@/lib/workspaces";
 import { isWorkspaceAdmin } from "@/lib/members";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -13,12 +13,14 @@ import { deleteWorkspace } from "@/lib/workspaces";
 
 interface Workspace {
   name: string;
+  lowStockThreshold?: number;
   [key: string]: any;
 }
 
 export default function GeneralSettings({ slug }: { slug: string }) {
   const { user } = useAuth();
   const [name, setName] = useState("");
+  const [lowStockThreshold, setLowStockThreshold] = useState(3);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -35,6 +37,7 @@ export default function GeneralSettings({ slug }: { slug: string }) {
         const ws = await getWorkspace(slug);
         if (ws) {
           setName(ws.name ?? "");
+          setLowStockThreshold(ws.lowStockThreshold ?? 3);
         } else {
           setName("");
         }
@@ -63,6 +66,7 @@ export default function GeneralSettings({ slug }: { slug: string }) {
 
     try {
       await updateWorkspaceName(slug, name);
+      await updateWorkspaceSettings(slug, { lowStockThreshold });
 
       // dispatch event to update other parts of the app
       if (typeof window !== "undefined") {
@@ -73,11 +77,11 @@ export default function GeneralSettings({ slug }: { slug: string }) {
         );
       }
 
-      setSuccess("Successfully updated workspace name");
+      setSuccess("Successfully updated settings");
       router.refresh();
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error("Failed to save workspace name:", err);
+      console.error("Failed to save settings:", err);
       setError("Failed to save changes. Please try again.");
     } finally {
       setSaving(false);
@@ -142,8 +146,29 @@ export default function GeneralSettings({ slug }: { slug: string }) {
             </p>
           </div>
 
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor="low-stock-threshold"
+              className="block text-sm font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Low Stock Threshold
+            </label>
+            <Input
+              id="low-stock-threshold"
+              type="number"
+              min="0"
+              value={lowStockThreshold}
+              onChange={(e) => setLowStockThreshold(Number(e.target.value))}
+              placeholder="Enter threshold (e.g., 3)"
+              className="max-w-md"
+            />
+            <p className="text-[0.8rem] text-muted-foreground">
+              Products with stock at or below this number will be highlighted as "Low Stock".
+            </p>
+          </div>
+
           <div className="flex items-center gap-4">
-            <Button onClick={handleSave} disabled={saving || !name.trim()}>
+            <Button onClick={handleSave} disabled={saving || !name.trim() || lowStockThreshold < 0}>
               {saving && <Spinner className="mr-2 h-4 w-4" />}
               {saving ? "Saving..." : "Save Changes"}
             </Button>

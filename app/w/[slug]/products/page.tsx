@@ -34,9 +34,11 @@ import RequirePermission from "@/components/auth/RequirePermission";
 import { MoreHorizontal, Plus, Search, Trash2 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ProductImporter } from "@/components/products/product-importer";
-
 import { EditProductDialog } from "@/components/products/edit-product-dialog";
 import { isWorkspaceAdmin } from "@/lib/members";
+import { Badge } from "@/components/ui/badge";
+import { getWorkspace } from "@/lib/workspaces";
+import { cn } from "@/lib/utils";
 
 function ProductsContent({ slug }: { slug: string }) {
     const { user } = useAuth();
@@ -46,10 +48,16 @@ function ProductsContent({ slug }: { slug: string }) {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [lowStockThreshold, setLowStockThreshold] = useState(3);
 
     useEffect(() => {
         if (user && slug) {
             isWorkspaceAdmin(slug, user.uid).then(setIsAdmin);
+            getWorkspace(slug).then(ws => {
+                if (ws && ws.lowStockThreshold !== undefined) {
+                    setLowStockThreshold(ws.lowStockThreshold);
+                }
+            });
         }
     }, [user, slug]);
 
@@ -264,49 +272,63 @@ function ProductsContent({ slug }: { slug: string }) {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredProducts.map((product) => (
-                                <TableRow key={product.id}>
-                                    <TableCell className="font-medium">
-                                        {product.productNumber}
-                                    </TableCell>
-                                    <TableCell>{product.name}</TableCell>
-                                    <TableCell>
-                                        {new Intl.NumberFormat("en-BD", {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        }).format(product.unitPrice)}
-                                    </TableCell>
-                                    <TableCell>{product.stock}</TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem
-                                                    onClick={() => {
-                                                        setEditingProduct(product);
-                                                        setIsEditDialogOpen(true);
-                                                    }}
-                                                    disabled={!canEdit}
-                                                >
-                                                    Edit
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="text-destructive focus:text-destructive"
-                                                    onClick={() => handleDeleteProduct(product.id)}
-                                                    disabled={!canDelete}
-                                                >
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                            filteredProducts.map((product) => {
+                                const isLowStock = product.stock <= lowStockThreshold;
+                                return (
+                                    <TableRow key={product.id} className={cn(isLowStock && "bg-destructive/10 hover:bg-destructive/20")}>
+                                        <TableCell className="font-medium">
+                                            {product.productNumber}
+                                        </TableCell>
+                                        <TableCell>{product.name}</TableCell>
+                                        <TableCell>
+                                            {new Intl.NumberFormat("en-BD", {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            }).format(product.unitPrice)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <span className={cn(isLowStock && "text-destructive font-bold")}>
+                                                    {product.stock}
+                                                </span>
+                                                {isLowStock && (
+                                                    <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
+                                                        Low
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            setEditingProduct(product);
+                                                            setIsEditDialogOpen(true);
+                                                        }}
+                                                        disabled={!canEdit}
+                                                    >
+                                                        Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="text-destructive focus:text-destructive"
+                                                        onClick={() => handleDeleteProduct(product.id)}
+                                                        disabled={!canDelete}
+                                                    >
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
                         )}
                     </TableBody>
                 </Table>
