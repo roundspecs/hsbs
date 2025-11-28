@@ -5,6 +5,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import {
     Table,
@@ -14,8 +15,10 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Transaction } from "@/lib/transactions";
 import { format } from "date-fns";
+import { Download } from "lucide-react";
 
 interface TransactionDetailsDialogProps {
     open: boolean;
@@ -30,16 +33,18 @@ export function TransactionDetailsDialog({
 }: TransactionDetailsDialogProps) {
     if (!transaction) return null;
 
+    const isOT = transaction.type === "OT";
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-3xl">
                 <DialogHeader>
-                    <DialogTitle>LC Entry Details</DialogTitle>
+                    <DialogTitle>{isOT ? "OT Entry Details" : "LC Entry Details"}</DialogTitle>
                 </DialogHeader>
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                        <p className="text-sm text-muted-foreground">LC Number</p>
+                        <p className="text-sm text-muted-foreground">{isOT ? "OT Number" : "LC Number"}</p>
                         <p className="font-medium">{transaction.referenceNumber}</p>
                     </div>
                     <div>
@@ -48,6 +53,12 @@ export function TransactionDetailsDialog({
                             {transaction.date ? format(transaction.date.toDate(), "dd MMM yyyy") : "-"}
                         </p>
                     </div>
+                    {isOT && transaction.surgeonName && (
+                        <div className="col-span-2">
+                            <p className="text-sm text-muted-foreground">Surgeon</p>
+                            <p className="font-medium">{transaction.surgeonName}</p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="rounded-md border overflow-x-auto">
@@ -93,6 +104,15 @@ export function TransactionDetailsDialog({
                         </TableBody>
                     </Table>
                 </div>
+
+                {isOT && (
+                    <DialogFooter className="sm:justify-start">
+                        <Button variant="outline" disabled>
+                            <Download className="mr-2 h-4 w-4" />
+                            Download Invoice (Coming Soon)
+                        </Button>
+                    </DialogFooter>
+                )}
             </DialogContent>
         </Dialog>
     );

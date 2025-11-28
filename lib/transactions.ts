@@ -17,6 +17,8 @@ export type Transaction = {
     totalAmount: number;
     createdAt: any;
     createdBy: string;
+    surgeonId?: string;
+    surgeonName?: string;
 };
 
 export async function createLCEntry(slug: string, data: {
@@ -74,11 +76,90 @@ export async function createLCEntry(slug: string, data: {
     });
 }
 
+export async function createOTEntry(slug: string, data: {
+    referenceNumber: string;
+    date: Date;
+    surgeonId: string;
+    surgeonName: string;
+    items: TransactionItem[];
+    totalAmount: number;
+    createdBy: string;
+}) {
+    const transactionRef = doc(db, `workspaces/${slug}/transactions`, `OT-${data.referenceNumber}`);
+
+    await runTransaction(db, async (transaction) => {
+        // 1. Uniqueness Check
+        const transactionDoc = await transaction.get(transactionRef);
+        if (transactionDoc.exists()) {
+            throw new Error(`OT Number ${data.referenceNumber} already exists.`);
+        }
+
+        // 2. Read all product documents to get current stock
+        const productReads: { ref: DocumentReference; item: TransactionItem }[] = [];
+        for (const item of data.items) {
+            const productRef = doc(db, `workspaces/${slug}/products`, item.productId);
+            productReads.push({ ref: productRef, item });
+        }
+
+        const productDocs = await Promise.all(productReads.map(p => transaction.get(p.ref)));
+
+        // 3. Stock Validation and Writes
+        // Create Transaction Document
+        transaction.set(transactionRef, {
+            type: "OT",
+            referenceNumber: data.referenceNumber,
+            date: data.date,
+            surgeonId: data.surgeonId,
+            surgeonName: data.surgeonName,
+            items: data.items,
+            totalAmount: data.totalAmount,
+            createdAt: serverTimestamp(),
+            createdBy: data.createdBy,
+        });
+
+        // Update Product Stocks
+        productDocs.forEach((docSnap, index) => {
+            const item = productReads[index].item;
+            if (!docSnap.exists()) {
+                throw new Error(`Product ${item.productName} (ID: ${item.productId}) not found.`);
+            }
+
+            const productData = docSnap.data();
+            const currentStock = productData?.stock || 0;
+
+            if (currentStock < item.quantity) {
+                throw new Error(`Insufficient stock for ${item.productName}. Available: ${currentStock}, Requested: ${item.quantity}`);
+            }
+
+            const newStock = currentStock - item.quantity;
+
+            transaction.update(productReads[index].ref, {
+                stock: newStock
+            });
+        });
+    });
+}
+
 export async function getLCTransactions(slug: string): Promise<Transaction[]> {
     const transactionsRef = collection(db, `workspaces/${slug}/transactions`);
     const q = query(
         transactionsRef,
         where("type", "==", "LC"),
+        orderBy("date", "desc")
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    } as Transaction));
+}
+
+export async function getOTTransactions(slug: string): Promise<Transaction[]> {
+    const transactionsRef = collection(db, `workspaces/${slug}/transactions`);
+    const q = query(
+        transactionsRef,
+        where("type", "==", "OT"),
         orderBy("date", "desc")
     );
 
