@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Settings, Settings2, UserLock, Users, Package, Stethoscope, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { ChevronRight, Settings, Settings2, UserLock, Users, Package, Stethoscope, ArrowDownLeft, ArrowUpRight, LayoutDashboard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail, SidebarMenuBadge } from '../ui/sidebar';
 import { NavUser } from "./nav-user";
@@ -61,6 +61,20 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
         <WorkspaceSwitcher workspaces={workspaces} activeWorkspace={activeWorkspace} />
       </SidebarHeader>
       <SidebarContent>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>HOME</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Dashboard">
+                <Link href={`/w/${activeWorkspace?.slug}`}>
+                  <LayoutDashboard />
+                  <span>Dashboard</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
 
         <SidebarGroup>
           <SidebarGroupLabel>INVENTORY</SidebarGroupLabel>
