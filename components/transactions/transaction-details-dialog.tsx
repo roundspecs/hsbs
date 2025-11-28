@@ -15,10 +15,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Transaction } from "@/lib/transactions";
 import { format } from "date-fns";
-import { Download } from "lucide-react";
+import DownloadInvoiceBtn from "@/components/invoices/download-invoice-btn";
 
 interface TransactionDetailsDialogProps {
     open: boolean;
@@ -107,10 +106,7 @@ export function TransactionDetailsDialog({
 
                 {isOT && (
                     <DialogFooter className="sm:justify-start">
-                        <Button variant="outline" disabled>
-                            <Download className="mr-2 h-4 w-4" />
-                            Download Invoice (Coming Soon)
-                        </Button>
+                        <DownloadInvoiceBtn transaction={transaction} />
                     </DialogFooter>
                 )}
             </DialogContent>
