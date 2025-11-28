@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Settings, Settings2, UserLock, Users, Package, Stethoscope } from 'lucide-react';
+import { ChevronRight, Settings, Settings2, UserLock, Users, Package, Stethoscope, FilePlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail } from '../ui/sidebar';
 import { NavUser } from "./nav-user";
@@ -53,6 +53,14 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
                 <Link href={`/w/${activeWorkspace?.slug}/products`}>
                   <Package />
                   <span>Products</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="New LC Entry">
+                <Link href={`/w/${activeWorkspace?.slug}/inventory/lc-new`}>
+                  <FilePlus />
+                  <span>New LC Entry</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
