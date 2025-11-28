@@ -2,7 +2,7 @@
 
 import { ChevronRight, Settings, Settings2, UserLock, Users, Package, Stethoscope, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail } from '../ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail, SidebarMenuBadge } from '../ui/sidebar';
 import { NavUser } from "./nav-user";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/useAuth';
 import { useEffect, useState } from 'react';
 import { isWorkspaceAdmin } from '@/lib/members';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebaseConfig';
 
 
 type Workspace = { name: string, slug: string }
@@ -18,6 +20,7 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
   const router = useRouter();
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [joinRequestCount, setJoinRequestCount] = useState(0);
 
   useEffect(() => {
     if (!user || !activeWorkspace?.slug) {
@@ -37,6 +40,20 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
 
     checkAdmin();
   }, [user, activeWorkspace?.slug]);
+
+  useEffect(() => {
+    if (!isAdmin || !activeWorkspace?.slug) {
+      setJoinRequestCount(0);
+      return;
+    }
+
+    const requestsRef = collection(db, "workspaces", activeWorkspace.slug, "joinRequests");
+    const unsubscribe = onSnapshot(requestsRef, (snapshot) => {
+      setJoinRequestCount(snapshot.size);
+    });
+
+    return () => unsubscribe();
+  }, [isAdmin, activeWorkspace?.slug]);
 
   return (
     <Sidebar collapsible="icon" >
@@ -138,6 +155,11 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
                     <span>Join Requests</span>
                   </Link>
                 </SidebarMenuButton>
+                {joinRequestCount > 0 && (
+                  <SidebarMenuBadge className="bg-destructive text-white">
+                    {joinRequestCount}
+                  </SidebarMenuBadge>
+                )}
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroup>
