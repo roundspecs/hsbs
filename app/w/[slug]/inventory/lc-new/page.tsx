@@ -10,6 +10,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
     Form,
     FormControl,
     FormField,
@@ -32,7 +40,6 @@ import {
 } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/useAuth";
-import { usePermission } from "@/lib/usePermission";
 import { getProducts, Product } from "@/lib/products";
 import { createLCEntry } from "@/lib/transactions";
 import { useRouter, usePathname } from "next/navigation";
@@ -64,6 +71,7 @@ function LCEntryContent({ slug }: { slug: string }) {
         resolver: zodResolver(lcEntrySchema),
         defaultValues: {
             referenceNumber: "",
+            date: new Date(),
             items: [],
         },
     });
@@ -103,11 +111,19 @@ function LCEntryContent({ slug }: { slug: string }) {
             });
 
             toast.success("LC Entry created successfully");
-            router.push(`/w/${slug}/products`); // Redirect to products or inventory list
+            router.push(`/w/${slug}/products`);
             router.refresh();
         } catch (error: any) {
             console.error("Error creating LC Entry:", error);
-            toast.error(error.message || "Failed to create LC Entry");
+            if (error.message && error.message.includes("already exists")) {
+                form.setError("referenceNumber", {
+                    type: "manual",
+                    message: "This LC Number already exists.",
+                });
+                toast.error("This LC Number already exists.");
+            } else {
+                toast.error(error.message || "Failed to create LC Entry");
+            }
         } finally {
             setSubmitting(false);
         }
@@ -123,17 +139,17 @@ function LCEntryContent({ slug }: { slug: string }) {
     }, 0) || 0;
 
     return (
-        <div className="max-w-4xl mx-auto py-6">
-            <h1 className="text-2xl font-bold mb-6">New LC Entry (Stock-In)</h1>
+        <div className="max-w-6xl w-full">
+            <h2 className="text-lg font-semibold mb-6">New LC Entry (Stock-In)</h2>
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col md:flex-row gap-6">
                         <FormField
                             control={form.control}
                             name="referenceNumber"
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="flex-1">
                                     <FormLabel>LC Number</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Enter LC Number" {...field} />
@@ -147,7 +163,7 @@ function LCEntryContent({ slug }: { slug: string }) {
                             control={form.control}
                             name="date"
                             render={({ field }) => (
-                                <FormItem className="flex flex-col">
+                                <FormItem className="flex flex-col flex-1">
                                     <FormLabel>Date</FormLabel>
                                     <Popover>
                                         <PopoverTrigger asChild>
@@ -186,152 +202,172 @@ function LCEntryContent({ slug }: { slug: string }) {
                         />
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-medium">Products</h3>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => append({ productId: "", productName: "", quantity: 1, unitPrice: 0 })}
-                            >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Add Product
-                            </Button>
-                        </div>
-
-                        {fields.map((field, index) => (
-                            <div key={field.id} className="flex gap-4 items-end border p-4 rounded-md bg-card">
-                                <FormField
-                                    control={form.control}
-                                    name={`items.${index}.productId`}
-                                    render={({ field }) => (
-                                        <FormItem className="flex-1">
-                                            <FormLabel className={index !== 0 ? "sr-only" : ""}>Product</FormLabel>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <FormControl>
-                                                        <Button
-                                                            variant="outline"
-                                                            role="combobox"
-                                                            className={cn(
-                                                                "w-full justify-between",
-                                                                !field.value && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {field.value
-                                                                ? products.find(
-                                                                    (product) => product.id === field.value
-                                                                )?.name
-                                                                : "Select product"}
-                                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                        </Button>
-                                                    </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-[300px] p-0">
-                                                    <Command>
-                                                        <CommandInput placeholder="Search product..." />
-                                                        <CommandList>
-                                                            <CommandEmpty>No product found.</CommandEmpty>
-                                                            <CommandGroup>
-                                                                {products.map((product) => (
-                                                                    <CommandItem
-                                                                        value={product.name}
-                                                                        key={product.id}
-                                                                        onSelect={() => {
-                                                                            form.setValue(`items.${index}.productId`, product.id);
-                                                                            form.setValue(`items.${index}.productName`, product.name);
-                                                                            form.setValue(`items.${index}.unitPrice`, product.unitPrice);
-                                                                            // Clear errors if any
-                                                                            form.clearErrors(`items.${index}.productId`);
-                                                                        }}
-                                                                        disabled={selectedProductIds.includes(product.id) && product.id !== field.value}
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Product Name</TableHead>
+                                    <TableHead>Quantity</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {fields.map((field, index) => (
+                                    <TableRow key={field.id}>
+                                        <TableCell>
+                                            <FormField
+                                                control={form.control}
+                                                name={`items.${index}.productId`}
+                                                render={({ field }) => (
+                                                    <FormItem className="flex-1">
+                                                        <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <FormControl>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        role="combobox"
+                                                                        className={cn(
+                                                                            "w-full min-w-[250px] justify-between",
+                                                                            !field.value && "text-muted-foreground"
+                                                                        )}
                                                                     >
-                                                                        <Check
-                                                                            className={cn(
-                                                                                "mr-2 h-4 w-4",
-                                                                                product.id === field.value
-                                                                                    ? "opacity-100"
-                                                                                    : "opacity-0"
-                                                                            )}
-                                                                        />
-                                                                        {product.name}
-                                                                    </CommandItem>
-                                                                ))}
-                                                            </CommandGroup>
-                                                        </CommandList>
-                                                    </Command>
-                                                </PopoverContent>
-                                            </Popover>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name={`items.${index}.quantity`}
-                                    render={({ field }) => (
-                                        <FormItem className="w-24">
-                                            <FormLabel className={index !== 0 ? "sr-only" : ""}>Qty</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="number"
-                                                    min="1"
-                                                    {...field}
-                                                    onChange={(e) => field.onChange(Number(e.target.value))}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name={`items.${index}.unitPrice`}
-                                    render={({ field }) => (
-                                        <FormItem className="w-32">
-                                            <FormLabel className={index !== 0 ? "sr-only" : ""}>Price</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" {...field} readOnly className="bg-muted" />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="mb-2 text-destructive"
-                                    onClick={() => remove(index)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        ))}
-                        {fields.length === 0 && (
-                            <div className="text-center py-8 text-muted-foreground border border-dashed rounded-md">
-                                No products added. Click "Add Product" to start.
-                            </div>
-                        )}
-                        {form.formState.errors.items && (
-                            <p className="text-sm font-medium text-destructive">
-                                {form.formState.errors.items.message}
-                            </p>
-                        )}
+                                                                        <span className="truncate">
+                                                                            {field.value
+                                                                                ? products.find(
+                                                                                    (product) => product.id === field.value
+                                                                                )?.name
+                                                                                : "Select product"}
+                                                                        </span>
+                                                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                                    </Button>
+                                                                </FormControl>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-[400px] p-0" align="start">
+                                                                <Command>
+                                                                    <CommandInput placeholder="Search product..." />
+                                                                    <CommandList>
+                                                                        <CommandEmpty>No product found.</CommandEmpty>
+                                                                        <CommandGroup>
+                                                                            {products.map((product) => (
+                                                                                <CommandItem
+                                                                                    value={product.name}
+                                                                                    key={product.id}
+                                                                                    onSelect={() => {
+                                                                                        form.setValue(`items.${index}.productId`, product.id);
+                                                                                        form.setValue(`items.${index}.productName`, product.name);
+                                                                                        form.setValue(`items.${index}.unitPrice`, product.unitPrice);
+                                                                                        form.clearErrors(`items.${index}.productId`);
+                                                                                    }}
+                                                                                    disabled={selectedProductIds.includes(product.id) && product.id !== field.value}
+                                                                                >
+                                                                                    <Check
+                                                                                        className={cn(
+                                                                                            "mr-2 h-4 w-4",
+                                                                                            product.id === field.value
+                                                                                                ? "opacity-100"
+                                                                                                : "opacity-0"
+                                                                                        )}
+                                                                                    />
+                                                                                    {product.name}
+                                                                                    <span className="ml-2 text-muted-foreground text-xs">
+                                                                                        ({new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(product.unitPrice)})
+                                                                                    </span>
+                                                                                </CommandItem>
+                                                                            ))}
+                                                                        </CommandGroup>
+                                                                    </CommandList>
+                                                                </Command>
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <FormField
+                                                control={form.control}
+                                                name={`items.${index}.quantity`}
+                                                render={({ field }) => (
+                                                    <FormItem className="w-24">
+                                                        <FormControl>
+                                                            <Input
+                                                                type="number"
+                                                                min="1"
+                                                                {...field}
+                                                                onChange={(e) => field.onChange(Number(e.target.value))}
+                                                            />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <FormField
+                                                control={form.control}
+                                                name={`items.${index}.unitPrice`}
+                                                render={({ field }) => (
+                                                    <FormItem className="w-32">
+                                                        <FormControl>
+                                                            <Input type="number" {...field} readOnly className="bg-muted" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive"
+                                                onClick={() => remove(index)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                {fields.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                                            No products added. Click "Add Product" to start.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
                     </div>
 
-                    <div className="flex justify-between items-center pt-4 border-t">
-                        <div className="text-lg font-semibold">
-                            Total Value: {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(totalValue)}
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full border-dashed"
+                        onClick={() => append({ productId: "", productName: "", quantity: 1, unitPrice: 0 })}
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Product
+                    </Button>
+
+                    {form.formState.errors.items && (
+                        <p className="text-sm font-medium text-destructive">
+                            {form.formState.errors.items.message}
+                        </p>
+                    )}
+
+                    <div className="flex justify-end pt-4 border-t">
+                        <div className="flex flex-col items-end gap-4">
+                            <div className="text-2xl font-bold bg-slate-100 p-4 rounded-lg">
+                                Total Value: {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(totalValue)}
+                            </div>
+                            <Button type="submit" size="lg" disabled={submitting || loadingProducts}>
+                                {submitting && <Spinner className="mr-2 h-4 w-4" />}
+                                Submit LC Entry
+                            </Button>
                         </div>
-                        <Button type="submit" disabled={submitting || loadingProducts}>
-                            {submitting && <Spinner className="mr-2 h-4 w-4" />}
-                            Submit LC Entry
-                        </Button>
                     </div>
                 </form>
             </Form>

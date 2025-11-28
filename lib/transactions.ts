@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebaseConfig";
-import { collection, doc, runTransaction, serverTimestamp, Timestamp, DocumentReference } from "firebase/firestore";
+import { collection, doc, runTransaction, serverTimestamp, Timestamp, DocumentReference, query, where, orderBy, getDocs } from "firebase/firestore";
 
 export type TransactionItem = {
     productId: string;
@@ -72,4 +72,19 @@ export async function createLCEntry(slug: string, data: {
             });
         });
     });
+}
+
+export async function getLCTransactions(slug: string): Promise<Transaction[]> {
+    const transactionsRef = collection(db, `workspaces/${slug}/transactions`);
+    const q = query(
+        transactionsRef,
+        where("type", "==", "LC"),
+        orderBy("date", "desc")
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    } as Transaction));
 }

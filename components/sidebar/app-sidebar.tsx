@@ -57,10 +57,10 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="New LC Entry">
-                <Link href={`/w/${activeWorkspace?.slug}/inventory/lc-new`}>
+              <SidebarMenuButton asChild tooltip="LC">
+                <Link href={`/w/${activeWorkspace?.slug}/inventory/lc-history`}>
                   <FilePlus />
-                  <span>New LC Entry</span>
+                  <span>LC</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
