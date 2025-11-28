@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Settings, Settings2, UserLock, Users, Package, Stethoscope, FilePlus } from 'lucide-react';
+import { ChevronRight, Settings, Settings2, UserLock, Users, Package, Stethoscope, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail } from '../ui/sidebar';
 import { NavUser } from "./nav-user";
@@ -57,24 +57,26 @@ const AppSidebar = ({ workspaces, activeWorkspace }: { workspaces: Workspace[], 
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="LC">
-                <Link href={`/w/${activeWorkspace?.slug}/inventory/lc-history`}>
-                  <FilePlus />
-                  <span>LC</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>CRM</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip="Surgeons">
                 <Link href={`/w/${activeWorkspace?.slug}/surgeons`}>
                   <Stethoscope />
                   <span>Surgeons</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Stock In (LC)">
+                <Link href={`/w/${activeWorkspace?.slug}/inventory/lc-history`}>
+                  <ArrowDownLeft />
+                  <span>Stock In (LC)</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Stock Out (OT)">
+                <Link href={`/w/${activeWorkspace?.slug}/inventory/ot-history`}>
+                  <ArrowUpRight />
+                  <span>Stock Out (OT)</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
