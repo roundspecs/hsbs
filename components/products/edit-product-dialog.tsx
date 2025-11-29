@@ -112,7 +112,7 @@ export function EditProductDialog({
                     </div>
                     <div className="grid gap-2">
                         <label htmlFor="edit-unitPrice" className="text-sm font-medium">
-                            Unit Price (BDT)
+                            Unit Price
                         </label>
                         <Input
                             id="edit-unitPrice"

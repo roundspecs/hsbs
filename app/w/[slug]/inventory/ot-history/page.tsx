@@ -103,8 +103,8 @@ function OTHistoryContent({ slug }: { slug: string }) {
                                                 <TooltipTrigger asChild>
                                                     <Badge
                                                         className={`cursor-pointer ${transaction.paymentStatus === 'paid'
-                                                                ? "bg-green-500 hover:bg-green-600"
-                                                                : "bg-red-500 hover:bg-red-600"
+                                                            ? "bg-green-500 hover:bg-green-600"
+                                                            : "bg-red-500 hover:bg-red-600"
                                                             }`}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -115,15 +115,17 @@ function OTHistoryContent({ slug }: { slug: string }) {
                                                         {transaction.paymentStatus === 'paid'
                                                             ? "PAID"
                                                             : `DUE: ${new Intl.NumberFormat("en-BD", {
-                                                                style: "currency",
-                                                                currency: "BDT",
+                                                                style: "decimal",
+                                                                minimumFractionDigits: 0,
+                                                                maximumFractionDigits: 0,
                                                             }).format(transaction.totalAmount - (transaction.amountPaid || 0))}`}
                                                     </Badge>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p>Amount Paid: {new Intl.NumberFormat("en-BD", {
-                                                        style: "currency",
-                                                        currency: "BDT",
+                                                        style: "decimal",
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 0,
                                                     }).format(transaction.amountPaid || 0)}</p>
                                                 </TooltipContent>
                                             </Tooltip>
@@ -131,8 +133,9 @@ function OTHistoryContent({ slug }: { slug: string }) {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         {new Intl.NumberFormat("en-BD", {
-                                            style: "currency",
-                                            currency: "BDT",
+                                            style: "decimal",
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
                                         }).format(transaction.totalAmount)}
                                     </TableCell>
                                     <TableCell>

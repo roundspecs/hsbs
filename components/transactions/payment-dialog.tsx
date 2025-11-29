@@ -76,13 +76,13 @@ export function PaymentDialog({ transaction, open, onOpenChange, onSuccess }: Pa
                         <div className="flex justify-between">
                             <span className="text-sm font-medium">Total Bill:</span>
                             <span className="text-sm font-bold">
-                                {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(transaction.totalAmount)}
+                                {new Intl.NumberFormat("en-BD", { style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(transaction.totalAmount)}
                             </span>
                         </div>
                         <div className="flex justify-between text-muted-foreground">
                             <span className="text-sm">Currently Paid:</span>
                             <span className="text-sm">
-                                {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(transaction.amountPaid || 0)}
+                                {new Intl.NumberFormat("en-BD", { style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(transaction.amountPaid || 0)}
                             </span>
                         </div>
                         <div className={`flex justify-between font-medium ${isPaid ? 'text-green-600' : 'text-red-600'}`}>

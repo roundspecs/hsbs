@@ -88,8 +88,9 @@ function LCHistoryContent({ slug }: { slug: string }) {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         {new Intl.NumberFormat("en-BD", {
-                                            style: "currency",
-                                            currency: "BDT",
+                                            style: "decimal",
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
                                         }).format(transaction.totalAmount)}
                                     </TableCell>
                                     <TableCell>

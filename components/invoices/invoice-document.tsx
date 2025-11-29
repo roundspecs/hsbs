@@ -143,10 +143,10 @@ const InvoiceTableRow = ({ items }: { items: Transaction['items'] }) => {
                     <Text style={[styles.colProduct, styles.tableCell]}>{item.productName}</Text>
                     <Text style={[styles.colQty, styles.tableCell]}>{item.quantity}</Text>
                     <Text style={[styles.colPrice, styles.tableCell]}>
-                        {new Intl.NumberFormat('en-BD', { minimumFractionDigits: 2 }).format(item.unitPrice)}
+                        {new Intl.NumberFormat('en-BD', { minimumFractionDigits: 0 }).format(item.unitPrice)}
                     </Text>
                     <Text style={[styles.colTotal, styles.tableCell]}>
-                        {new Intl.NumberFormat('en-BD', { minimumFractionDigits: 2 }).format(item.quantity * item.unitPrice)}
+                        {new Intl.NumberFormat('en-BD', { minimumFractionDigits: 0 }).format(item.quantity * item.unitPrice)}
                     </Text>
                 </View>
             ))}
@@ -159,7 +159,7 @@ const InvoiceTableFooter = ({ total }: { total: number }) => (
         <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Grand Total:</Text>
             <Text style={styles.totalValue}>
-                Tk. {new Intl.NumberFormat('en-BD', { minimumFractionDigits: 2 }).format(total)}
+                Tk. {new Intl.NumberFormat('en-BD', { minimumFractionDigits: 0 }).format(total)}
             </Text>
         </View>
     </View>

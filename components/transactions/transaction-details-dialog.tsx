@@ -77,14 +77,16 @@ export function TransactionDetailsDialog({
                                     <TableCell className="text-right">{item.quantity}</TableCell>
                                     <TableCell className="text-right">
                                         {new Intl.NumberFormat("en-BD", {
-                                            style: "currency",
-                                            currency: "BDT",
+                                            style: "decimal",
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
                                         }).format(item.unitPrice)}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         {new Intl.NumberFormat("en-BD", {
-                                            style: "currency",
-                                            currency: "BDT",
+                                            style: "decimal",
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
                                         }).format(item.quantity * item.unitPrice)}
                                     </TableCell>
                                 </TableRow>
@@ -95,8 +97,9 @@ export function TransactionDetailsDialog({
                                 </TableCell>
                                 <TableCell className="text-right font-bold">
                                     {new Intl.NumberFormat("en-BD", {
-                                        style: "currency",
-                                        currency: "BDT",
+                                        style: "decimal",
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
                                     }).format(transaction.totalAmount)}
                                 </TableCell>
                             </TableRow>

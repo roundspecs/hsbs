@@ -237,8 +237,8 @@ function LCEntryContent({ slug }: { slug: string }) {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Product Name</TableHead>
-                                    <TableHead>Quantity</TableHead>
-                                    <TableHead>Price</TableHead>
+                                    <TableHead className="text-right">Quantity</TableHead>
+                                    <TableHead className="text-right">Price</TableHead>
                                     <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -301,7 +301,7 @@ function LCEntryContent({ slug }: { slug: string }) {
                                                                                     />
                                                                                     {product.name}
                                                                                     <span className="ml-2 text-muted-foreground text-xs">
-                                                                                        ({new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(product.unitPrice)})
+                                                                                        ({new Intl.NumberFormat("en-BD", { style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(product.unitPrice)})
                                                                                     </span>
                                                                                 </CommandItem>
                                                                             ))}
@@ -327,6 +327,7 @@ function LCEntryContent({ slug }: { slug: string }) {
                                                                 min="1"
                                                                 {...field}
                                                                 onChange={(e) => field.onChange(Number(e.target.value))}
+                                                                className="text-right"
                                                             />
                                                         </FormControl>
                                                         <FormMessage />
@@ -341,7 +342,7 @@ function LCEntryContent({ slug }: { slug: string }) {
                                                 render={({ field }) => (
                                                     <FormItem className="w-32">
                                                         <FormControl>
-                                                            <Input type="number" {...field} readOnly className="bg-muted" />
+                                                            <Input type="number" {...field} readOnly className="bg-muted text-right" />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
@@ -391,7 +392,7 @@ function LCEntryContent({ slug }: { slug: string }) {
                     <div className="flex justify-end pt-4 border-t">
                         <div className="flex flex-col items-end gap-4">
                             <div className="text-2xl font-bold bg-slate-100 p-4 rounded-lg">
-                                Total Value: {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(totalValue)}
+                                Total Value: {new Intl.NumberFormat("en-BD", { style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(totalValue)}
                             </div>
                             <Button type="submit" size="lg" disabled={submitting || loadingProducts}>
                                 {submitting && <Spinner className="mr-2 h-4 w-4" />}

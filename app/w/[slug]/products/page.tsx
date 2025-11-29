@@ -201,7 +201,7 @@ function ProductsContent({ slug }: { slug: string }) {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="grid gap-2">
                                                 <label htmlFor="unitPrice" className="text-sm font-medium">
-                                                    Unit Price (BDT)
+                                                    Unit Price
                                                 </label>
                                                 <Input
                                                     id="unitPrice"
@@ -253,8 +253,8 @@ function ProductsContent({ slug }: { slug: string }) {
                         <TableRow>
                             <TableHead>Product No</TableHead>
                             <TableHead>Name</TableHead>
-                            <TableHead>Unit Price (BDT)</TableHead>
-                            <TableHead>Stock</TableHead>
+                            <TableHead className="text-right">Unit Price</TableHead>
+                            <TableHead className="text-right">Stock</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                     </TableHeader>
@@ -280,14 +280,14 @@ function ProductsContent({ slug }: { slug: string }) {
                                             {product.productNumber}
                                         </TableCell>
                                         <TableCell>{product.name}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-right">
                                             {new Intl.NumberFormat("en-BD", {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0,
                                             }).format(product.unitPrice)}
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-end gap-2">
                                                 <span className={cn(isLowStock && "text-destructive font-bold")}>
                                                     {product.stock}
                                                 </span>

@@ -330,10 +330,10 @@ function OTEntryContent({ slug }: { slug: string }) {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Product Name</TableHead>
-                                    <TableHead>Stock</TableHead>
-                                    <TableHead>Quantity</TableHead>
-                                    <TableHead>Price</TableHead>
-                                    <TableHead>Total</TableHead>
+                                    <TableHead className="text-right">Stock</TableHead>
+                                    <TableHead className="text-right">Quantity</TableHead>
+                                    <TableHead className="text-right">Price</TableHead>
+                                    <TableHead className="text-right">Total</TableHead>
                                     <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -415,7 +415,7 @@ function OTEntryContent({ slug }: { slug: string }) {
                                                     )}
                                                 />
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="text-right">
                                                 <Badge variant="secondary">
                                                     {currentItem.currentStock}
                                                 </Badge>
@@ -432,7 +432,7 @@ function OTEntryContent({ slug }: { slug: string }) {
                                                                     min="1"
                                                                     {...field}
                                                                     onChange={(e) => field.onChange(Number(e.target.value))}
-                                                                    className={cn(isStockLow && "border-destructive focus-visible:ring-destructive")}
+                                                                    className={cn(isStockLow && "border-destructive focus-visible:ring-destructive", "text-right")}
                                                                 />
                                                             </FormControl>
                                                             {isStockLow && (
@@ -445,14 +445,14 @@ function OTEntryContent({ slug }: { slug: string }) {
                                                     )}
                                                 />
                                             </TableCell>
-                                            <TableCell>
-                                                <div className="w-32 p-2 text-sm">
-                                                    {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(currentItem.unitPrice)}
+                                            <TableCell className="text-right">
+                                                <div className="w-32 p-2 text-sm ml-auto">
+                                                    {new Intl.NumberFormat("en-BD", { style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(currentItem.unitPrice)}
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
-                                                <div className="w-32 p-2 text-sm font-medium">
-                                                    {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(currentItem.quantity * currentItem.unitPrice)}
+                                            <TableCell className="text-right">
+                                                <div className="w-32 p-2 text-sm font-medium ml-auto">
+                                                    {new Intl.NumberFormat("en-BD", { style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(currentItem.quantity * currentItem.unitPrice)}
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -499,7 +499,7 @@ function OTEntryContent({ slug }: { slug: string }) {
                     <div className="flex justify-end pt-4 border-t">
                         <div className="flex flex-col items-end gap-4">
                             <div className="text-2xl font-bold bg-slate-100 p-4 rounded-lg">
-                                Total Bill: {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(totalValue)}
+                                Total Bill: {new Intl.NumberFormat("en-BD", { style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(totalValue)}
                             </div>
                             <Button type="submit" size="lg" disabled={submitting || loadingData}>
                                 {submitting && <Spinner className="mr-2 h-4 w-4" />}

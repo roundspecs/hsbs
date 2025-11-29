@@ -61,7 +61,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(stats.inventoryValue)}
+              {new Intl.NumberFormat("en-BD", { style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.inventoryValue)}
             </div>
           </CardContent>
         </Card>
@@ -72,7 +72,7 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(stats.monthlySales)}
+              {new Intl.NumberFormat("en-BD", { style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.monthlySales)}
             </div>
           </CardContent>
         </Card>
@@ -106,44 +106,44 @@ export default function DashboardPage({ params }: { params: Promise<{ slug: stri
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Reference #</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Reference #</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stats.recentActivity.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>
+                      {transaction.date ? format(transaction.date.toDate(), "dd MMM yyyy") : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={transaction.type === "LC" ? "default" : "secondary"}
+                        className={transaction.type === "LC" ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600 text-white"}
+                      >
+                        {transaction.type === "LC" ? "Stock In" : "Stock Out"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{transaction.referenceNumber}</TableCell>
+                    <TableCell className="text-right">
+                      {new Intl.NumberFormat("en-BD", { style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(transaction.totalAmount)}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stats.recentActivity.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell>
-                        {transaction.date ? format(transaction.date.toDate(), "dd MMM yyyy") : "-"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={transaction.type === "LC" ? "default" : "secondary"}
-                          className={transaction.type === "LC" ? "bg-green-500 hover:bg-green-600" : "bg-blue-500 hover:bg-blue-600 text-white"}
-                        >
-                          {transaction.type === "LC" ? "Stock In" : "Stock Out"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{transaction.referenceNumber}</TableCell>
-                      <TableCell className="text-right">
-                        {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(transaction.totalAmount)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {stats.recentActivity.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        No recent activity.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                ))}
+                {stats.recentActivity.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                      No recent activity.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
         <Card className="col-span-4">
