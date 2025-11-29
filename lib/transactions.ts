@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebaseConfig";
-import { collection, doc, runTransaction, serverTimestamp, Timestamp, DocumentReference, query, where, orderBy, getDocs } from "firebase/firestore";
+import { collection, doc, runTransaction, serverTimestamp, Timestamp, DocumentReference, query, where, orderBy, getDocs, updateDoc } from "firebase/firestore";
 
 export type TransactionItem = {
     productId: string;
@@ -19,6 +19,8 @@ export type Transaction = {
     createdBy: string;
     surgeonId?: string;
     surgeonName?: string;
+    amountPaid: number;
+    paymentStatus: 'paid' | 'unpaid';
 };
 
 export async function createLCEntry(slug: string, data: {
@@ -115,6 +117,8 @@ export async function createOTEntry(slug: string, data: {
             totalAmount: data.totalAmount,
             createdAt: serverTimestamp(),
             createdBy: data.createdBy,
+            amountPaid: 0,
+            paymentStatus: 'unpaid',
         });
 
         // Update Product Stocks
@@ -168,4 +172,12 @@ export async function getOTTransactions(slug: string): Promise<Transaction[]> {
         id: doc.id,
         ...doc.data()
     } as Transaction));
+}
+
+export async function updateTransactionPayment(slug: string, transactionId: string, amountPaid: number, status: 'paid' | 'unpaid') {
+    const transactionRef = doc(db, `workspaces/${slug}/transactions`, transactionId);
+    await updateDoc(transactionRef, {
+        amountPaid,
+        paymentStatus: status
+    });
 }

@@ -19,6 +19,14 @@ import RequirePermission from "@/components/auth/RequirePermission";
 import { useRouter, usePathname } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { PaymentDialog } from "@/components/transactions/payment-dialog";
 
 function OTHistoryContent({ slug }: { slug: string }) {
     const { user } = useAuth();
@@ -26,19 +34,22 @@ function OTHistoryContent({ slug }: { slug: string }) {
     const [loading, setLoading] = useState(true);
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+
+    const fetchTransactions = async () => {
+        if (!slug) return;
+        try {
+            const data = await getOTTransactions(slug);
+            setTransactions(data);
+        } catch (error) {
+            console.error("Error fetching OT transactions:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchTransactions = async () => {
-            try {
-                const data = await getOTTransactions(slug);
-                setTransactions(data);
-            } catch (error) {
-                console.error("Error fetching OT transactions:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        if (slug) fetchTransactions();
+        fetchTransactions();
     }, [slug]);
 
     return (
@@ -60,6 +71,7 @@ function OTHistoryContent({ slug }: { slug: string }) {
                             <TableHead>Date</TableHead>
                             <TableHead>OT Number</TableHead>
                             <TableHead>Surgeon</TableHead>
+                            <TableHead>Payment</TableHead>
                             <TableHead className="text-right">Total Bill</TableHead>
                             <TableHead className="w-[100px]"></TableHead>
                         </TableRow>
@@ -85,6 +97,38 @@ function OTHistoryContent({ slug }: { slug: string }) {
                                     </TableCell>
                                     <TableCell className="font-medium">{transaction.referenceNumber}</TableCell>
                                     <TableCell>{transaction.surgeonName || "-"}</TableCell>
+                                    <TableCell>
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Badge
+                                                        className={`cursor-pointer ${transaction.paymentStatus === 'paid'
+                                                                ? "bg-green-500 hover:bg-green-600"
+                                                                : "bg-red-500 hover:bg-red-600"
+                                                            }`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedTransaction(transaction);
+                                                            setIsPaymentOpen(true);
+                                                        }}
+                                                    >
+                                                        {transaction.paymentStatus === 'paid'
+                                                            ? "PAID"
+                                                            : `DUE: ${new Intl.NumberFormat("en-BD", {
+                                                                style: "currency",
+                                                                currency: "BDT",
+                                                            }).format(transaction.totalAmount - (transaction.amountPaid || 0))}`}
+                                                    </Badge>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Amount Paid: {new Intl.NumberFormat("en-BD", {
+                                                        style: "currency",
+                                                        currency: "BDT",
+                                                    }).format(transaction.amountPaid || 0)}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </TableCell>
                                     <TableCell className="text-right">
                                         {new Intl.NumberFormat("en-BD", {
                                             style: "currency",
@@ -115,6 +159,12 @@ function OTHistoryContent({ slug }: { slug: string }) {
                 open={isDetailsOpen}
                 onOpenChange={setIsDetailsOpen}
                 transaction={selectedTransaction}
+            />
+            <PaymentDialog
+                open={isPaymentOpen}
+                onOpenChange={setIsPaymentOpen}
+                transaction={selectedTransaction}
+                onSuccess={fetchTransactions}
             />
         </div>
     );

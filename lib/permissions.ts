@@ -23,6 +23,7 @@ export const PERMISSIONS = {
         markPayment: "Mark payment received",
         editInvoice: "Edit invoices",
         deleteInvoice: "Delete invoices",
+        managePayments: "Manage payments",
     },
     surgeons: {
         viewSurgeons: "View surgeons",
